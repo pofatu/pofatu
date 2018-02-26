@@ -30,7 +30,7 @@ def main(args):
 
     dataset = common.Dataset(
         id=pofatu.__name__,
-        name="Pofatu",
+        name="POFATU",
         publisher_name="Max Planck Institute for the Science of Human History",
         publisher_place="Jena",
         publisher_url="http://www.shh.mpg.de",
