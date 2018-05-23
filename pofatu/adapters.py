@@ -1,28 +1,26 @@
-from sqlalchemy.orm import joinedload
+from collections import namedtuple
 
 from clld import interfaces
 from clld.web.adapters.geojson import GeoJson
 from clld.db.meta import DBSession
-from clld.db.models.common import Unit, Language
 
-from pofatu.models import ROCKTYPES
+from pofatu.interfaces import IRockSource
+from pofatu.models import ROCKSOURCETYPES
+
+RockSource = namedtuple('RockSource', 'id name type latitude longitude')
 
 
-class GeoJsonSamples(GeoJson):
+class GeoJsonSources(GeoJson):
     def feature_iterator(self, ctx, req):
-        q = DBSession.query(Unit).options(joinedload(Unit.language))
-        if 'site' in req.params:
-            site = Language.get(req.params['site'])
-            q = q.filter(Unit.language_pk == site.pk)
-        return q
+        for row in DBSession.execute(
+            "select id, name, type, latitude, longitude from rocksource where type = '%s'" % req.params['type']
+        ):
+            yield RockSource(*row)
 
     def feature_properties(self, ctx, req, feature):
-        res = GeoJson.feature_properties(self, ctx, req, feature)
-        res['type'] = feature.type
-        res['color'] = ROCKTYPES.get(feature.rock_type, '#cccccc')
-        return res
+        return {'color': ROCKSOURCETYPES[feature.type]}
 
 
 def includeme(config):
     config.register_adapter(
-        GeoJsonSamples, interfaces.IUnit, interfaces.IIndex, name=GeoJson.mimetype)
+        GeoJsonSources, IRockSource, interfaces.IIndex, name=GeoJson.mimetype)

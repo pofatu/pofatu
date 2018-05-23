@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import sys
+import re
 from itertools import groupby
 
 from six import text_type
@@ -8,10 +9,12 @@ from clld.scripts.util import initializedb, Data
 from clld.db.meta import DBSession
 from clld.db.models import common
 from xlrd import open_workbook
-from clldutils.misc import nfilter
+from csvw.dsv import reader
+from clldutils.misc import slug
 
 import pofatu
 from pofatu import models
+from pofatu.scripts import georoc
 
 
 def val(cell, col):
@@ -48,39 +51,30 @@ def main(args):
         common.Editor(dataset=dataset, contributor=ed, ord=i + 1)
     DBSession.add(dataset)
 
-    wb = open_workbook(args.data_file('POFATU DB 220218.xlsx').as_posix())
-    sheet = wb.sheet_by_name('POFATU Values')
-
     """
-    CITATION [ANALYSIS]
-    TECTONIC SETTING
-    LOCATION
-    LOCATION COMMENT
-    LATITUDE (DD)
-    LONGITUDE (DD)
-    ALTITUDE (M)
-    COLLECTION ORIGIN
-    SAMPLE TYPE
-    SAMPLE NAME
-    SAMPLE COMMENT
-    ARTEFACT NAME
-    ARTEFACT TYPE 
-    ARTEFACT COMMENTS
-    SITE NAME
-    SITE CONTEXT
-    SITE COMMENTS
-    CITATION [SITE]
-    DEPTH BELOW SURFACE
-    LEVEL LABEL
-    ASSOCIATED FEATURE
-    CRA YEARS BP
-    CAL DATE
-    CITATION [DATE]
-    PLACE OF CONSERVATION
-    TEXTURE
-    MINERALS
-    ROCK TYPE
-    COMMENTS
+1    CITATION[ANALYSIS],
+2    TECTONIC_SETTING,
+3    LOCATION1_(ARCHIPELAGO),
+4    LOCATION2_(ISLAND),
+5    LOCATION3_(LOCALITY),
+6    LOCATION_COMMENT,
+7    LATITUDE_(DD),
+8    LONGITUDE_(DD),
+9    ALTITUDE_(M),
+->10    SAMPLE_NAME,
+11    SAMPLE_CATEGORY,
+12    COLLECTION_ORIGIN,
+13    SAMPLE_COMMENT,
+14    ARTEFACT_NAME,
+->15    ARTEFACT_TYPE_,
+16    ARTEFACT_COMMENTS,
+17    PLACE_OF_CONSERVATION,
+->18    SITE_NAME,
+->19    SITE_CONTEXT,
+    SITE_COMMENTS,
+    CITATION[SITE],DEPTH_BELOW_SURFACE,LEVEL_LABEL,ASSOCIATED_FEATURE
+    
+    
     """
     # duplicate columns:
     #--> CO2
@@ -88,51 +82,79 @@ def main(args):
     #--> S
     #--> CL
 
-    cols = []
-    for i in range(sheet.ncols):
-        cname = sheet.cell(1, i).value
-        #if cname in cols:
-        #    print('--> %s' % cname)
-        cols.append(cname)
+    seen = set()
+    for item in sorted(reader(args.data_file('Pofatu-180518-refs.csv'), dicts=True), key=lambda i: i['SHORT CITATION']):
+        res = re.split(',\s*([0-9]{4})\.\s*', item['COMPLETE CITATION'], 1)
+        if len(res) == 3:
+            kw = dict(author=res[0], year=res[1], title=res[2])
+        else:
+            kw = dict(description=res[0])
+        id_ = slug(item['SHORT CITATION'])
+        if id_ not in seen:
+            data.add(
+                common.Source,
+                item['SHORT CITATION'],
+                id=id_,
+                name=item['SHORT CITATION'],
+                **kw)
+            seen.add(id_)
 
-    for col in cols:
-        print(col)
-
-    rows = []
-    for i in range(sheet.nrows):
-        if i < 2:
+    items = list(reader(args.data_file('Pofatu-180518.csv'), dicts=True))
+    for i, row in enumerate(items):
+        row = {k: v.strip() for k, v in row.items()}
+        if not row['LATITUDE_(DD)']:
             continue
-        rows.append(dict(zip(cols, [val(sheet.cell(i, j), cols[j]) for j in range(sheet.ncols)])))
+        if row['SAMPLE_CATEGORY'] == 'ARTEFACT':
+            art = models.Artefact(
+                id='{0}'.format(i + 1),
+                name=row['SAMPLE_NAME'],
+                latitude=row['LATITUDE_(DD)'],
+                longitude=row['LONGITUDE_(DD)'],
+                site_context=row['SITE_CONTEXT'] if row['SITE_CONTEXT'] not in ['', 'NA', 'MISSING'] else None,
+                site_name=row['SITE_NAME'] if row['SITE_NAME'] not in ['', 'NA', 'MISSING'] else None,
+                type=row['ARTEFACT_TYPE_']
+            )
+            DBSession.add(art)
+            if row['CITATION[ANALYSIS]'] in data['Source']:
+                art.source = data['Source'][row['CITATION[ANALYSIS]']]
+        elif row['SAMPLE_CATEGORY'] == 'SOURCE':
+            src = models.RockSource(
+                id='pofatu-{0}'.format(i + 1),
+                name=row['SAMPLE_NAME'],
+                latitude=row['LATITUDE_(DD)'],
+                longitude=row['LONGITUDE_(DD)'],
+                tectonic_setting=row['TECTONIC_SETTING'],
+                location='{0} / {1}'.format(row['LOCATION1_(ARCHIPELAGO)'], row['LOCATION2_(ISLAND)']),
+                type='POFATU',
+            )
+            DBSession.add(src)
 
-    def key(r):
-        return r['SITE NAME'], r['CITATION [SITE]']
+    s, bins = set(), set()
+    for p, n, l, t, lat, lon in georoc.iter_samples(args.data_file('..', '..', 'georoc', 'csv')):
+        if abs(lat) > 90 or abs(lon) > 180:
+            # ignore malformed coordinates
+            print(p, n, lat, lon)
+            continue
+        if (-40 < lat < 30) and (lon > 160 or lon < -110) and not (lat > 20 and -130 < lon < -110):
+            # ignore non-pacific island samples
+            key = (l, round(lat, 2), round(lon, 2))
+            # only include one sample per location and roughly-equal coordinate
+            if key not in bins:
+                s.add((n, l, t, lat, lon))
+                bins.add(key)
 
-    i = 0
-    for site, samples in groupby(sorted(rows, key=key), key):
-        i += 1
-        samples = list(samples)
-        site = models.Site(id='s{0}'.format(i), name='{0} {1}'.format(*site))
-        latitudes = nfilter(s['LATITUDE (DD)'] for s in samples)
-        longitudes = nfilter(s['LONGITUDE (DD)'] for s in samples)
-        site.latitude = sum(latitudes) / len(latitudes)
-        site.longitude = sum(longitudes) / len(longitudes)
-        DBSession.add(site)
-
-        for j, sample in enumerate(samples):
-            name = sample['SAMPLE NAME']
-            if sample['ARTEFACT NAME']:
-                name += ' {0}'.format(sample['ARTEFACT NAME'])
-            DBSession.add(models.Sample(
-                id='{0}-{1}'.format(i, j + 1),  # sample['UNIQUE_ID'],
-                name=name,
-                type=sample['SAMPLE TYPE'],
-                latitude=sample['LATITUDE (DD)'],
-                longitude=sample['LONGITUDE (DD)'],
-                language=site,
-                rock_type=sample['ROCK TYPE'] if sample['ROCK TYPE'] != 'NA' else None,
-                tectonic_setting=sample['TECTONIC SETTING'],
-                location=sample['LOCATION'],
-            ))
+    for i, (name, location, tectonic_setting, lat, lon) in enumerate(sorted(s)):
+        src = models.RockSource(
+            id='georoc-{0}'.format(i + 1),
+            name=name,
+            latitude=lat,
+            longitude=lon,
+            tectonic_setting=tectonic_setting,
+            location=location,
+            type='GEOROC',
+        )
+        DBSession.add(src)
+    print(len(s))
 
 
 def prime_cache(args):

@@ -15,30 +15,19 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
-from clld.db.models.common import Unit, Language, UnitParameter, UnitValue
+from clld.db.models.common import Language, Source, IdNameDescriptionMixin
 
+from pofatu.interfaces import IRockSource
 
-ROCKTYPES = {
-    'ALKALI BASALT': '#bbccee',
-    'BASALT': '#44aa99',
-    'BASANITE': '#332288',
-    'HAWAIITE': '#117733',
-    'LOW SILICA BASANITE': '#999933',
-    'MUGEARITE': '#ddcc77',
-    'PHONO-TEPHRITE': '#cc6677',
-    'PICRITE': '#882255',
-    'PICRO-BASALTE': '#aa4499',
-    'TEPHRITE ': '#ffffff',
+ROCKSOURCETYPES = {
+    'POFATU': '#ff0000',
+    'GEOROC': '#0000ff',
 }
 
 
-@implementer(interfaces.IUnit)
-class Sample(CustomModelMixin, Unit):
-    pk = Column(Integer, ForeignKey('unit.pk'), primary_key=True)
-    type = Column(Unicode)
-    site_context = Column(Unicode)
-    site_comment = Column(Unicode)
-    rock_type = Column(Unicode)
+@implementer(IRockSource)
+class RockSource(Base, IdNameDescriptionMixin):
+    type = Column(Unicode)  # georoc or pofatu
     tectonic_setting = Column(Unicode)
     location = Column(Unicode)
     latitude = Column(
@@ -52,6 +41,12 @@ class Sample(CustomModelMixin, Unit):
 
 
 @implementer(interfaces.ILanguage)
-class Site(CustomModelMixin, Language):
+class Artefact(CustomModelMixin, Language):
     pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
-    samples = relationship(Sample)
+    site_name = Column(Unicode)
+    site_context = Column(Unicode)
+    type = Column(Unicode)
+    tectonic_setting = Column(Unicode)
+    location = Column(Unicode)
+    source_pk = Column(Integer, ForeignKey('source.pk'))
+    source = relationship(Source)
