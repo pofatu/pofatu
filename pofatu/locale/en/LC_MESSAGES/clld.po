@@ -20,11 +20,11 @@ msgstr ""
 
 #: pofatu/__init__.py:8
 msgid "Language"
-msgstr "Artefact"
+msgstr "Location"
 
 #: pofatu/__init__.py:9
 msgid "Languages"
-msgstr "Artefacts"
+msgstr "Locations"
 
 #: pofatu/__init__.py:10
 msgid "Source"

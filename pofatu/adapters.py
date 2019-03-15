@@ -4,7 +4,7 @@ from clld import interfaces
 from clld.web.adapters.geojson import GeoJson
 from clld.db.meta import DBSession
 
-from pofatu.interfaces import IRockSource
+from pofatu.interfaces import ISite
 from pofatu.models import ROCKSOURCETYPES
 
 RockSource = namedtuple('RockSource', 'id name type latitude longitude')
@@ -23,4 +23,4 @@ class GeoJsonSources(GeoJson):
 
 def includeme(config):
     config.register_adapter(
-        GeoJsonSources, IRockSource, interfaces.IIndex, name=GeoJson.mimetype)
+        GeoJsonSources, ISite, interfaces.IIndex, name=GeoJson.mimetype)

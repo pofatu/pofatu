@@ -1,5 +1,5 @@
 from zope.interface import Interface
 
 
-class IRockSource(Interface):
+class ISite(Interface):
     pass

@@ -5,6 +5,7 @@ from sqlalchemy import (
     Unicode,
     Integer,
     Float,
+    Boolean,
     CheckConstraint,
     ForeignKey,
     UniqueConstraint,
@@ -15,9 +16,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
-from clld.db.models.common import Language, Source, IdNameDescriptionMixin
+from clld.db.models.common import Language, Source, Value, Contribution, UnitParameter, HasSourceMixin
+from pypofatu.dataset import Dataset
 
-from pofatu.interfaces import IRockSource
+from pofatu.interfaces import ISite
+
 
 ROCKSOURCETYPES = {
     'POFATU': '#ff0000',
@@ -25,24 +28,26 @@ ROCKSOURCETYPES = {
 }
 
 
-@implementer(IRockSource)
-class RockSource(Base, IdNameDescriptionMixin):
-    type = Column(Unicode)  # georoc or pofatu
-    tectonic_setting = Column(Unicode)
-    location = Column(Unicode)
-    latitude = Column(
-        Float(),
-        CheckConstraint('-90 <= latitude and latitude <= 90'),
-        doc='geographical latitude in WGS84')
-    longitude = Column(
-        Float(),
-        CheckConstraint('-180 <= longitude and longitude <= 180 '),
-        doc='geographical longitude in WGS84')
+@implementer(interfaces.IContribution)
+class PofatuContribution(CustomModelMixin, Contribution):
+    pk = Column(Integer, ForeignKey('contribution.pk'), primary_key=True)
+    source_pk = Column(Integer, ForeignKey('source.pk'))
+    source = relationship(Source)
 
 
 @implementer(interfaces.ILanguage)
-class Artefact(CustomModelMixin, Language):
+class Location(CustomModelMixin, Language):
     pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
+    loc1 = Column(Unicode)
+    loc2 = Column(Unicode)
+    loc3 = Column(Unicode)
+    elevation = Column(Unicode)
+
+
+@implementer(interfaces.IValue)
+class Sample(CustomModelMixin, Value):
+    pk = Column(Integer, ForeignKey('value.pk'), primary_key=True)
+
     site_name = Column(Unicode)
     site_context = Column(Unicode)
     type = Column(Unicode)
@@ -50,3 +55,22 @@ class Artefact(CustomModelMixin, Language):
     location = Column(Unicode)
     source_pk = Column(Integer, ForeignKey('source.pk'))
     source = relationship(Source)
+
+
+class SampleReference(Base, HasSourceMixin):
+    __table_args__ = (UniqueConstraint('sample_pk', 'source_pk', 'description'),)
+
+    sample_pk = Column(Integer, ForeignKey('sample.pk'), nullable=False)
+    sample = relationship(Sample, innerjoin=True, backref="references")
+
+
+class Measurement(Base):
+    __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk'),)
+
+    value = Column(Float)
+    less = Column(Boolean)
+    precision = Column(Float)
+    sample_pk = Column(Integer, ForeignKey('sample.pk'), nullable=False)
+    sample = relationship(Sample, innerjoin=True, backref="values")
+    unitparameter_pk = Column(Integer, ForeignKey('unitparameter.pk'), nullable=False)
+    parameter = relationship(UnitParameter, innerjoin=True, backref="values")

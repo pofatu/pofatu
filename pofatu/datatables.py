@@ -3,8 +3,6 @@ from clld.web.datatables.language import Languages
 from clld.web.util.helpers import link
 from clld.db.util import get_distinct_values
 
-from pofatu.models import Artefact, RockSource
-
 
 class RefCol(Col):
     __kw__ = dict(bSearchable=False)
@@ -16,18 +14,6 @@ class RefCol(Col):
         if item.source:
             return link(self.dt.req, item.source)
         return ''
-
-
-class Artefacts(Languages):
-    def col_defs(self):
-        return [
-            Col(self, 'name', model_col=Artefact.name),
-            Col(self, 'type', model_col=Artefact.type, choices=get_distinct_values(Artefact.type)),
-            Col(self, 'site_name', model_col=Artefact.site_name),
-            Col(self, 'site_context', model_col=Artefact.site_context, choices=get_distinct_values(Artefact.site_context)),
-            RefCol(self, 'reference'),
-            LinkToMapCol(self, '#'),
-        ]
 
 
 class RockSources(DataTable):
@@ -43,5 +29,4 @@ class RockSources(DataTable):
 
 
 def includeme(config):
-    config.register_datatable('languages', Artefacts)
     config.register_datatable('rocksources', RockSources)

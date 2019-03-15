@@ -5,31 +5,31 @@ from itertools import groupby
 
 from six import text_type
 
-from clld.scripts.util import initializedb, Data
+from clld.scripts.util import initializedb, Data, bibtex2source
+from clld.lib import bibtex
 from clld.db.meta import DBSession
 from clld.db.models import common
-from xlrd import open_workbook
 from csvw.dsv import reader
 from clldutils.misc import slug
+from pypofatu.dataset import Dataset
 
 import pofatu
 from pofatu import models
 from pofatu.scripts import georoc
 
 
-def val(cell, col):
-    v = cell.value
-    if isinstance(v, text_type):
-        v = v.strip()
-    if v == 'NA':
-        v = None
-    if col in ['LATITUDE (DD)', 'LONGITUDE (DD)']:
-        v = float(v) if v is not None else v
-    return v
+def refkey(s):
+    return {
+        'kahn-2008-nzja': 'kahn-2009-nzja',
+        'metraux-1940-ethnology': 'metraux-1940-easter',
+        'mcalister-2011-phd': 'mcalister-2011-nukuhiva',
+        'weisler 1993 phd': 'weisler-1993-phd',
+    }.get(s.lower(), s.lower())
 
 
 def main(args):
     data = Data()
+    ds = Dataset()
 
     dataset = common.Dataset(
         id=pofatu.__name__,
@@ -51,36 +51,88 @@ def main(args):
         common.Editor(dataset=dataset, contributor=ed, ord=i + 1)
     DBSession.add(dataset)
 
-    """
-1    CITATION[ANALYSIS],
-2    TECTONIC_SETTING,
-3    LOCATION1_(ARCHIPELAGO),
-4    LOCATION2_(ISLAND),
-5    LOCATION3_(LOCALITY),
-6    LOCATION_COMMENT,
-7    LATITUDE_(DD),
-8    LONGITUDE_(DD),
-9    ALTITUDE_(M),
-->10    SAMPLE_NAME,
-11    SAMPLE_CATEGORY,
-12    COLLECTION_ORIGIN,
-13    SAMPLE_COMMENT,
-14    ARTEFACT_NAME,
-->15    ARTEFACT_TYPE_,
-16    ARTEFACT_COMMENTS,
-17    PLACE_OF_CONSERVATION,
-->18    SITE_NAME,
-->19    SITE_CONTEXT,
-    SITE_COMMENTS,
-    CITATION[SITE],DEPTH_BELOW_SURFACE,LEVEL_LABEL,ASSOCIATED_FEATURE
-    
-    
-    """
-    # duplicate columns:
-    #--> CO2
-    #--> F
-    #--> S
-    #--> CL
+    # load sources from bibtex!
+    for rec in bibtex.Database.from_file(ds.bib):
+        data.add(common.Source, rec.id.replace('_', '-').lower(), _obj=bibtex2source(rec, lowercase_id=False))
+
+    samples = list(ds.iterdata())
+    for sample in samples:
+        loc = sample.location
+        if loc.name not in data['Location']:
+            data.add(
+                models.Location,
+                loc.name,
+                id=slug(loc.name),
+                name=loc.name,
+                loc1=loc.loc1,
+                loc2=loc.loc2,
+                loc3=loc.loc3,
+                description=loc.comment,
+                latitude=loc.latitude,
+                longitude=loc.longitude,
+                elevation=loc.elevation,
+            )
+
+    # Add contributions
+    for contrib in ds.itercontributions():
+        c = data.add(
+            models.PofatuContribution, contrib.id,
+            id=contrib.id,
+            name=contrib.label,
+            description=contrib.description,
+            source=data['Source'][contrib.id.lower()],
+        )
+        for i, name in enumerate(contrib.contributors):
+            cid = slug(name)
+            co = data['Contributor'].get(cid)
+            if not co:
+                co = data.add(common.Contributor, cid, id=cid, name=name)
+            common.ContributionContributor(ord=i, contribution=c, contributor=co)
+
+    # Add two Parameters: SOURCE and ARTEFACT
+    data.add(common.Parameter, 'source', id='source', name='SOURCE')
+    data.add(common.Parameter, 'artefact', id='artefact', name='ARTEFACT')
+
+    # Add Samples and UnitParameters and Measurements
+    for sample in samples:
+        if sample.uid in data['Sample']:
+            print('duplicate: POFATU ID: "{0.id}", Method code: "{0.method_id}"'.format(sample))
+            continue
+        vsid = '{0}-{1}-{2}'.format(sample.category, sample.sample.source_id, slug(sample.location.name))
+        vs = data['ValueSet'].get(vsid)
+        if not vs:
+            vs = data.add(
+                common.ValueSet, vsid,
+                id=vsid,
+                language=data['Location'][sample.location.name],
+                parameter=data['Parameter'][sample.category.lower()],
+                contribution=data['PofatuContribution'][sample.sample.source_id],
+            )
+        v = data.add(models.Sample, sample.uid, id=slug(sample.uid), name=sample.uid, valueset=vs)
+        DBSession.add(models.SampleReference(
+            description='sample', sample=v, source=data['Source'][sample.sample.source_id.lower()]))
+
+        for sid in sample.site.source_ids:
+            DBSession.add(models.SampleReference(
+                description='site', sample=v, source=data['Source'][refkey(sid)]))
+
+        for sid in sample.artefact.source_ids:
+            DBSession.add(models.SampleReference(
+                description='artefact', sample=v, source=data['Source'][refkey(sid)]))
+
+        for i, (k, val) in enumerate(sample.data.items(), start=1):
+            val, less, precision = val
+            if val is not None:
+                pid = '{0}-{1}'.format(slug(k, lowercase=False), i)
+                p = data['UnitParameter'].get(pid)
+                if not p:
+                    p = data.add(common.UnitParameter, pid, id=pid, name=k)
+                models.Measurement(value=val, less=less, precision=precision, sample=v, parameter=p)
+    return
+
+
+
+
 
     seen = set()
     for item in sorted(reader(args.data_file('Pofatu-180518-refs.csv'), dicts=True), key=lambda i: i['SHORT CITATION']):
