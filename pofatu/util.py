@@ -5,3 +5,4 @@ This module is also used to lookup custom template context providers, i.e. funct
 following a special naming convention which are called to update the template context
 before rendering resource's detail or index views.
 """
+from pofatu.models import Measurement

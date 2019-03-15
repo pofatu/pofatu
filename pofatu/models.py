@@ -19,7 +19,7 @@ from clld.db.meta import Base, CustomModelMixin
 from clld.db.models.common import Language, Source, Value, Contribution, UnitParameter, HasSourceMixin
 from pypofatu.dataset import Dataset
 
-from pofatu.interfaces import ISite
+from pofatu.interfaces import ISite, IMeasurement
 
 
 ROCKSOURCETYPES = {
@@ -56,6 +56,12 @@ class Sample(CustomModelMixin, Value):
     source_pk = Column(Integer, ForeignKey('source.pk'))
     source = relationship(Source)
 
+    def iter_grouped_sources(self):
+        for type_ in ['data', 'artefact', 'site']:
+            res = [ref.source for ref in self.references if ref.description == type_]
+            if res:
+                yield type_, res
+
 
 class SampleReference(Base, HasSourceMixin):
     __table_args__ = (UniqueConstraint('sample_pk', 'source_pk', 'description'),)
@@ -64,6 +70,7 @@ class SampleReference(Base, HasSourceMixin):
     sample = relationship(Sample, innerjoin=True, backref="references")
 
 
+@implementer(IMeasurement)
 class Measurement(Base):
     __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk'),)
 
@@ -73,4 +80,4 @@ class Measurement(Base):
     sample_pk = Column(Integer, ForeignKey('sample.pk'), nullable=False)
     sample = relationship(Sample, innerjoin=True, backref="values")
     unitparameter_pk = Column(Integer, ForeignKey('unitparameter.pk'), nullable=False)
-    parameter = relationship(UnitParameter, innerjoin=True, backref="values")
+    unitparameter = relationship(UnitParameter, innerjoin=True, backref="values")

@@ -127,7 +127,7 @@ def main(args):
                 p = data['UnitParameter'].get(pid)
                 if not p:
                     p = data.add(common.UnitParameter, pid, id=pid, name=k)
-                models.Measurement(value=val, less=less, precision=precision, sample=v, parameter=p)
+                models.Measurement(value=val, less=less, precision=precision, sample=v, unitparameter=p)
     return
 
 

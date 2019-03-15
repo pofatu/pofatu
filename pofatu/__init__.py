@@ -2,7 +2,7 @@ from pyramid.config import Configurator
 
 # we must make sure custom models are known at database initialization!
 from pofatu import models
-from pofatu.interfaces import ISite
+from pofatu.interfaces import ISite, IMeasurement
 
 _ = lambda s: s
 _('Language')
@@ -26,6 +26,5 @@ def main(global_config, **settings):
     """
     config = Configurator(settings=settings)
     config.include('clldmpg')
-    #config.register_resource(
-    #    'rocksource', models.Site, ISite, with_index=True)
+    config.register_resource('measurement', models.Measurement, IMeasurement, with_index=True)
     return config.make_wsgi_app()
