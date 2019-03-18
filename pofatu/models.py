@@ -17,7 +17,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models.common import Language, Source, Value, Contribution, UnitParameter, HasSourceMixin
-from pypofatu.dataset import Dataset
 
 from pofatu.interfaces import ISite, IMeasurement
 
