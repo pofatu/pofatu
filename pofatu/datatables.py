@@ -49,5 +49,16 @@ class Measurements(DataTable):
         return res
 
 
+class Samples(Values):
+    def col_defs(self):
+        res = [LinkCol(self, 'sample')]
+        if self.language:
+            res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
+        if self.parameter:
+            res.append(LinkCol(self, 'location', get_object=lambda v: v.valueset.language))
+        return res
+
+
 def includeme(config):
+    config.register_datatable('values', Samples)
     config.register_datatable('measurements', Measurements)
