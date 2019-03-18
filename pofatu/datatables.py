@@ -40,7 +40,7 @@ class Measurements(DataTable):
             query = query.join(models.Measurement.sample)
             return query.filter(models.Measurement.unitparameter_pk == self.unitparameter.pk)
 
-        return query
+        return query.outerjoin(models.Measurement.method)
 
     def col_defs(self):
         if self.sample:
@@ -54,6 +54,7 @@ class Measurements(DataTable):
         else:
             res = []
         res.append(ValueCol(self, 'value'))
+        res.append(LinkCol(self, 'method', get_object=lambda i: i.method))
         return res
 
 

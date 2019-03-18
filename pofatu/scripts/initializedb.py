@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import sys
 import re
 from itertools import groupby
+from collections import Counter
 
 from six import text_type
 
@@ -89,11 +90,23 @@ def main(args):
                 co = data.add(common.Contributor, cid, id=cid, name=name)
             common.ContributionContributor(ord=i, contribution=c, contributor=co)
 
+    for method in ds.itermethods():
+        data.add(
+            models.Method,
+            method.label.lower().replace('plosone', 'po'),
+            id=slug(method.label),
+            name=method.label,
+            laboratory=method.laboratory,
+            technique=method.technique,
+            instrument=method.instrument,
+        )
+
     # Add two Parameters: SOURCE and ARTEFACT
     data.add(common.Parameter, 'source', id='source', name='SOURCE')
     data.add(common.Parameter, 'artefact', id='artefact', name='ARTEFACT')
 
     # Add Samples and UnitParameters and Measurements
+    missing_method = Counter()
     for sample in samples:
         if sample.uid in data['Sample']:
             print('duplicate: POFATU ID: "{0.id}", Method code: "{0.method_id}"'.format(sample))
@@ -127,7 +140,21 @@ def main(args):
                 p = data['UnitParameter'].get(pid)
                 if not p:
                     p = data.add(common.UnitParameter, pid, id=pid, name=k)
-                models.Measurement(value=val, less=less, precision=precision, sample=v, unitparameter=p)
+                mid = '{0} {1}'.format(sample.method_id, k.split()[0]).lower()
+                m = data['Method'].get(mid)
+                if not m:
+                    missing_method.update([mid])
+                else:
+                    models.Measurement(
+                        value=val,
+                        less=less,
+                        precision=precision,
+                        sample=v,
+                        unitparameter=p,
+                        method=m,
+                    )
+    for k, v in missing_method.most_common(20):
+        print(k, v)
     return
 
 

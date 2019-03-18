@@ -71,16 +71,17 @@ class SampleReference(Base, HasSourceMixin):
 
 @implementer(IMethod)
 class Method(Base, IdNameDescriptionMixin):
-    pass
+    technique = Column(Unicode)
+    instrument = Column(Unicode)
+    laboratory = Column(Unicode)
 
 
 @implementer(IMeasurement)
 class Measurement(Base):
     __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk'),)
 
-    #
-    # FIXME: relate to a method!
-    #
+    method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
+    method = relationship(Method, innerjoin=True, backref="measurements")
 
     value = Column(Float)
     less = Column(Boolean)
