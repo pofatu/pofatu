@@ -20,6 +20,14 @@ class RefCol(Col):
         return ''
 
 
+class ValueCol(Col):
+    def format(self, item):
+        return '{0}{1}{2}'.format(
+            '< ' if item.less else '',
+            item.value,
+            '± {0}'.format(item.precision) if item.precision is not None else '')
+
+
 class Measurements(DataTable):
     __constraints__ = [models.Sample, common.UnitParameter]
 
@@ -45,7 +53,7 @@ class Measurements(DataTable):
             ]
         else:
             res = []
-        res.append(Col(self, 'value'))
+        res.append(ValueCol(self, 'value'))
         return res
 
 

@@ -16,9 +16,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
-from clld.db.models.common import Language, Source, Value, Contribution, UnitParameter, HasSourceMixin
+from clld.db.models.common import Language, Source, Value, Contribution, UnitParameter, HasSourceMixin, IdNameDescriptionMixin
 
-from pofatu.interfaces import ISite, IMeasurement
+from pofatu.interfaces import ISite, IMeasurement, IMethod
 
 
 ROCKSOURCETYPES = {
@@ -69,9 +69,18 @@ class SampleReference(Base, HasSourceMixin):
     sample = relationship(Sample, innerjoin=True, backref="references")
 
 
+@implementer(IMethod)
+class Method(Base, IdNameDescriptionMixin):
+    pass
+
+
 @implementer(IMeasurement)
 class Measurement(Base):
     __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk'),)
+
+    #
+    # FIXME: relate to a method!
+    #
 
     value = Column(Float)
     less = Column(Boolean)

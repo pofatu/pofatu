@@ -5,5 +5,9 @@ class IMeasurement(Interface):
     pass
 
 
+class IMethod(Interface):
+    pass
+
+
 class ISite(Interface):
     pass
