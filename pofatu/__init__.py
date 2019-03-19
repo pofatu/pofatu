@@ -12,10 +12,8 @@ _('Language')
 _('Languages')
 _('Source')
 _('Sources')
-_('RockSource')
-_('RockSources')
-_('Rocksource')
-_('Rocksources')
+_('Value')
+_('Values')
 
 
 #

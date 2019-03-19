@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-05-23 17:44+0200\n"
+"POT-Creation-Date: 2019-03-19 11:24+0100\n"
 "PO-Revision-Date: 2018-02-21 19:55+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -16,37 +16,41 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.5.3\n"
+"Generated-By: Babel 2.6.0\n"
 
-#: pofatu/__init__.py:8
+#: pofatu/__init__.py:11
 msgid "Language"
 msgstr "Location"
 
-#: pofatu/__init__.py:9
+#: pofatu/__init__.py:12
 msgid "Languages"
 msgstr "Locations"
 
-#: pofatu/__init__.py:10
+#: pofatu/__init__.py:13
 msgid "Source"
 msgstr "Reference"
 
-#: pofatu/__init__.py:11
+#: pofatu/__init__.py:14
 msgid "Sources"
 msgstr "References"
 
-#: pofatu/__init__.py:12
-msgid "RockSource"
-msgstr "Source"
-
-#: pofatu/__init__.py:13
-msgid "RockSources"
-msgstr "Sources"
-
-#: pofatu/__init__.py:14
-msgid "Rocksource"
-msgstr "Source"
-
 #: pofatu/__init__.py:15
-msgid "Rocksources"
-msgstr "Sources"
+msgid "Value"
+msgstr "Sample"
+
+#: pofatu/__init__.py:16
+msgid "Values"
+msgstr "Samples"
+
+#~ msgid "RockSource"
+#~ msgstr "Source"
+
+#~ msgid "RockSources"
+#~ msgstr "Sources"
+
+#~ msgid "Rocksource"
+#~ msgstr "Source"
+
+#~ msgid "Rocksources"
+#~ msgstr "Sources"
 

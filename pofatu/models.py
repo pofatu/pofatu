@@ -71,6 +71,9 @@ class SampleReference(Base, HasSourceMixin):
 
 @implementer(IMethod)
 class Method(Base, IdNameDescriptionMixin):
+    code = Column(Unicode)
+    parameter = Column(Unicode)
+    reference_sample = Column(Unicode)
     technique = Column(Unicode)
     instrument = Column(Unicode)
     laboratory = Column(Unicode)
@@ -80,9 +83,6 @@ class Method(Base, IdNameDescriptionMixin):
 class Measurement(Base):
     __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk'),)
 
-    method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
-    method = relationship(Method, innerjoin=True, backref="measurements")
-
     value = Column(Float)
     less = Column(Boolean)
     precision = Column(Float)
@@ -90,3 +90,10 @@ class Measurement(Base):
     sample = relationship(Sample, innerjoin=True, backref="values")
     unitparameter_pk = Column(Integer, ForeignKey('unitparameter.pk'), nullable=False)
     unitparameter = relationship(UnitParameter, innerjoin=True, backref="values")
+
+
+class MeasurementMethod(Base):
+    method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
+    method = relationship(Method, innerjoin=True, backref="measurement_assocs")
+    measurement_pk = Column(Integer, ForeignKey('measurement.pk'), nullable=False)
+    measurement = relationship(Measurement, innerjoin=True, backref="method_assocs")

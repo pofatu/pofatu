@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 import sys
 import re
 from itertools import groupby
-from collections import Counter
+from collections import Counter, defaultdict
 
 from six import text_type
 
+from pybtex.database import parse_file
 from clld.scripts.util import initializedb, Data, bibtex2source
 from clld.lib import bibtex
 from clld.db.meta import DBSession
@@ -25,6 +26,7 @@ def refkey(s):
         'metraux-1940-ethnology': 'metraux-1940-easter',
         'mcalister-2011-phd': 'mcalister-2011-nukuhiva',
         'weisler 1993 phd': 'weisler-1993-phd',
+        'mccoy-1993-kahoolawe': 'mccoy-1993-puumoiwi',
     }.get(s.lower(), s.lower())
 
 
@@ -53,7 +55,8 @@ def main(args):
     DBSession.add(dataset)
 
     # load sources from bibtex!
-    for rec in bibtex.Database.from_file(ds.bib):
+    for entry in parse_file(str(ds.bib), 'bibtex').entries.values():
+        rec = bibtex.Record.from_entry(entry.fields['annote'], entry)
         data.add(common.Source, rec.id.replace('_', '-').lower(), _obj=bibtex2source(rec, lowercase_id=False))
 
     samples = list(ds.iterdata())
@@ -90,16 +93,21 @@ def main(args):
                 co = data.add(common.Contributor, cid, id=cid, name=name)
             common.ContributionContributor(ord=i, contribution=c, contributor=co)
 
+    methods = defaultdict(list)
     for method in ds.itermethods():
-        data.add(
+        m = data.add(
             models.Method,
             method.label.lower().replace('plosone', 'po'),
             id=slug(method.label),
             name=method.label,
+            code=method.code,
+            parameter=method.parameter.strip(),
+            reference_sample=method.ref_sample_name or None,
             laboratory=method.laboratory,
             technique=method.technique,
             instrument=method.instrument,
         )
+        methods[(m.code.lower().replace('plosone', 'po'), m.parameter.lower())].append(m)
 
     # Add two Parameters: SOURCE and ARTEFACT
     data.add(common.Parameter, 'source', id='source', name='SOURCE')
@@ -140,20 +148,22 @@ def main(args):
                 p = data['UnitParameter'].get(pid)
                 if not p:
                     p = data.add(common.UnitParameter, pid, id=pid, name=k)
-                mid = '{0} {1}'.format(sample.method_id, k.split()[0]).lower()
-                m = data['Method'].get(mid)
-                if not m:
+                mm = data.add(
+                    models.Measurement, None,
+                    value=val,
+                    less=less,
+                    precision=precision,
+                    sample=v,
+                    unitparameter=p,
+                )
+                mid = (sample.method_id.lower().replace('kahn-2008-nzja', 'kahn-2009-nzja'), k.split()[0].lower())
+                ms = methods.get(mid)
+                if not ms:
                     missing_method.update([mid])
                 else:
-                    models.Measurement(
-                        value=val,
-                        less=less,
-                        precision=precision,
-                        sample=v,
-                        unitparameter=p,
-                        method=m,
-                    )
-    for k, v in missing_method.most_common(20):
+                    for m in ms:
+                        models.MeasurementMethod(method=m, measurement=mm)
+    for k, v in missing_method.most_common():
         print(k, v)
     return
 

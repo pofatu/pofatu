@@ -1,6 +1,7 @@
 from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable
 from clld.web.datatables.value import Values
 from clld.web.util.helpers import link
+from clld.web.util.htmllib import HTML
 from clld.db.util import get_distinct_values
 
 from clld.db.models import common
@@ -28,6 +29,15 @@ class ValueCol(Col):
             '± {0}'.format(item.precision) if item.precision is not None else '')
 
 
+class MethodCol(Col):
+    __kw__ = dict(bSearchable=False, bSortable=False)
+
+    def format(self, item):
+        return HTML.ul(
+            *[HTML.li(link(self.dt.req, mm.method)) for mm in item.method_assocs],
+            **dict(class_='unstyled'))
+
+
 class Measurements(DataTable):
     __constraints__ = [models.Sample, common.UnitParameter]
 
@@ -45,22 +55,22 @@ class Measurements(DataTable):
     def col_defs(self):
         if self.sample:
             res = [
-                LinkCol(self, 'parameter', get_object=lambda i: i.unitparameter)
+                LinkCol(self, 'parameter', get_object=lambda i: i.unitparameter, model_col=common.UnitParameter.name)
             ]
         elif self.unitparameter:
             res = [
-                LinkCol(self, 'sample', get_object=lambda i: i.sample)
+                LinkCol(self, 'sample', get_object=lambda i: i.sample, model_col=common.Value.name)
             ]
         else:
             res = []
         res.append(ValueCol(self, 'value'))
-        res.append(LinkCol(self, 'method', get_object=lambda i: i.method))
+        res.append(MethodCol(self, 'method'))
         return res
 
 
 class Samples(Values):
     def col_defs(self):
-        res = [LinkCol(self, 'sample')]
+        res = [LinkCol(self, 'sample', model_col=common.Value.name)]
         if self.language:
             res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
         if self.parameter:
