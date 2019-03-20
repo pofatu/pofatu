@@ -3,6 +3,7 @@ import sys
 import re
 from itertools import groupby
 from collections import Counter, defaultdict
+from pathlib import Path
 
 from six import text_type
 
@@ -13,7 +14,7 @@ from clld.db.meta import DBSession
 from clld.db.models import common
 from csvw.dsv import reader
 from clldutils.misc import slug
-from pypofatu.dataset import Dataset
+from pypofatu import Pofatu
 
 import pofatu
 from pofatu import models
@@ -22,9 +23,8 @@ from pofatu.scripts import georoc
 
 def refkey(s):
     return {
-        'kahn-2008-nzja': 'kahn-2009-nzja',
-        'metraux-1940-ethnology': 'metraux-1940-easter',
-        'mcalister-2011-phd': 'mcalister-2011-nukuhiva',
+        #'metraux-1940-ethnology': 'metraux-1940-easter',
+        'mcalister-2017-po': 'mcalister-2017-plosone',
         'weisler 1993 phd': 'weisler-1993-phd',
         'mccoy-1993-kahoolawe': 'mccoy-1993-puumoiwi',
     }.get(s.lower(), s.lower())
@@ -32,7 +32,7 @@ def refkey(s):
 
 def main(args):
     data = Data()
-    ds = Dataset()
+    ds = Pofatu(Path(pofatu.__file__).parent.parent.parent / 'pofatu-data')
 
     dataset = common.Dataset(
         id=pofatu.__name__,
@@ -54,9 +54,8 @@ def main(args):
         common.Editor(dataset=dataset, contributor=ed, ord=i + 1)
     DBSession.add(dataset)
 
-    # load sources from bibtex!
-    for entry in parse_file(str(ds.bib), 'bibtex').entries.values():
-        rec = bibtex.Record.from_entry(entry.fields['annote'], entry)
+    for rec in ds.iterbib():
+        rec.genre = bibtex.EntryType.from_string(rec.genre)
         data.add(common.Source, rec.id.replace('_', '-').lower(), _obj=bibtex2source(rec, lowercase_id=False))
 
     samples = list(ds.iterdata())
@@ -84,7 +83,7 @@ def main(args):
             id=contrib.id,
             name=contrib.label,
             description=contrib.description,
-            source=data['Source'][contrib.id.lower()],
+            source=data['Source'][refkey(contrib.id)],
         )
         for i, name in enumerate(contrib.contributors):
             cid = slug(name)
@@ -97,7 +96,7 @@ def main(args):
     for method in ds.itermethods():
         m = data.add(
             models.Method,
-            method.label.lower().replace('plosone', 'po'),
+            method.label.lower(),
             id=slug(method.label),
             name=method.label,
             code=method.code,
@@ -107,7 +106,7 @@ def main(args):
             technique=method.technique,
             instrument=method.instrument,
         )
-        methods[(m.code.lower().replace('plosone', 'po'), m.parameter.lower())].append(m)
+        methods[(m.code.lower(), m.parameter.lower())].append(m)
 
     # Add two Parameters: SOURCE and ARTEFACT
     data.add(common.Parameter, 'source', id='source', name='SOURCE')
@@ -131,7 +130,7 @@ def main(args):
             )
         v = data.add(models.Sample, sample.uid, id=slug(sample.uid), name=sample.uid, valueset=vs)
         DBSession.add(models.SampleReference(
-            description='sample', sample=v, source=data['Source'][sample.sample.source_id.lower()]))
+            description='sample', sample=v, source=data['Source'][refkey(sample.sample.source_id)]))
 
         for sid in sample.site.source_ids:
             DBSession.add(models.SampleReference(
@@ -156,7 +155,7 @@ def main(args):
                     sample=v,
                     unitparameter=p,
                 )
-                mid = (sample.method_id.lower().replace('kahn-2008-nzja', 'kahn-2009-nzja'), k.split()[0].lower())
+                mid = (sample.method_id.lower(), k.split()[0].lower())
                 ms = methods.get(mid)
                 if not ms:
                     missing_method.update([mid])

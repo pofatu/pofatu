@@ -14,6 +14,8 @@ _('Source')
 _('Sources')
 _('Value')
 _('Values')
+_('Parameter')
+_('Parameters')
 
 
 #

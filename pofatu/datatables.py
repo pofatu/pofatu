@@ -1,5 +1,6 @@
-from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable
+from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCol
 from clld.web.datatables.value import Values
+from clld.web.datatables.contribution import Contributions
 from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML
 from clld.db.util import get_distinct_values
@@ -74,10 +75,23 @@ class Samples(Values):
         if self.language:
             res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
         if self.parameter:
-            res.append(LinkCol(self, 'location', get_object=lambda v: v.valueset.language))
+            res.append(LinkCol(self, 'contribution', get_object=lambda v: v.valueset.contribution))
+        if self.contribution:
+            res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
         return res
 
 
+class PofatuContributions(Contributions):
+    def col_defs(self):
+        return [
+            IdCol(self, 'id'),
+            Col(self, 'name', sTitle='Title'),
+            Col(self, 'description', sTitle='Abstract'),
+            LinkCol(self, 'source', get_object=lambda i: i.source, bSearchable=False, bSortable=False)
+        ]
+
+
 def includeme(config):
+    config.register_datatable('contributions', PofatuContributions)
     config.register_datatable('values', Samples)
     config.register_datatable('measurements', Measurements)
