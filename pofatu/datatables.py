@@ -30,15 +30,6 @@ class ValueCol(Col):
             '± {0}'.format(item.precision) if item.precision is not None else '')
 
 
-class MethodCol(Col):
-    __kw__ = dict(bSearchable=False, bSortable=False)
-
-    def format(self, item):
-        return HTML.ul(
-            *[HTML.li(link(self.dt.req, mm.method)) for mm in item.method_assocs],
-            **dict(class_='unstyled'))
-
-
 class Measurements(DataTable):
     __constraints__ = [models.Sample, common.UnitParameter]
 
@@ -65,7 +56,7 @@ class Measurements(DataTable):
         else:
             res = []
         res.append(ValueCol(self, 'value'))
-        res.append(MethodCol(self, 'method'))
+        res.append(LinkCol(self, 'method', get_object=lambda i: i.method, bSearchable=False, bSortable=False))
         return res
 
 

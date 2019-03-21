@@ -90,10 +90,5 @@ class Measurement(Base):
     sample = relationship(Sample, innerjoin=True, backref="values")
     unitparameter_pk = Column(Integer, ForeignKey('unitparameter.pk'), nullable=False)
     unitparameter = relationship(UnitParameter, innerjoin=True, backref="values")
-
-
-class MeasurementMethod(Base):
-    method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
+    method_pk = Column(Integer, ForeignKey('method.pk'))
     method = relationship(Method, innerjoin=True, backref="measurement_assocs")
-    measurement_pk = Column(Integer, ForeignKey('measurement.pk'), nullable=False)
-    measurement = relationship(Measurement, innerjoin=True, backref="method_assocs")

@@ -23,8 +23,8 @@ from pofatu.scripts import georoc
 
 def refkey(s):
     return {
-        #'metraux-1940-ethnology': 'metraux-1940-easter',
-        'mcalister-2017-po': 'mcalister-2017-plosone',
+        'metraux-1940-ethnology': 'metraux-1940-easter',
+        'mcalister-2017-plosone': 'mcalister-2017-po',
         'weisler 1993 phd': 'weisler-1993-phd',
         'mccoy-1993-kahoolawe': 'mccoy-1993-puumoiwi',
     }.get(s.lower(), s.lower())
@@ -59,7 +59,7 @@ def main(args):
         data.add(common.Source, rec.id.replace('_', '-').lower(), _obj=bibtex2source(rec, lowercase_id=False))
 
     samples = list(ds.iterdata())
-    for sample in samples:
+    for sample, _ in samples:
         loc = sample.location
         if loc.name not in data['Location']:
             data.add(
@@ -96,12 +96,12 @@ def main(args):
     for method in ds.itermethods():
         m = data.add(
             models.Method,
-            method.label.lower(),
-            id=slug(method.label),
+            method.uid,
+            id=slug(method.uid),
             name=method.label,
             code=method.code,
             parameter=method.parameter.strip(),
-            reference_sample=method.ref_sample_name or None,
+            reference_sample='; '.join([r.sample_name for r in method.references]),
             laboratory=method.laboratory,
             technique=method.technique,
             instrument=method.instrument,
@@ -114,11 +114,11 @@ def main(args):
 
     # Add Samples and UnitParameters and Measurements
     missing_method = Counter()
-    for sample in samples:
-        if sample.uid in data['Sample']:
-            print('duplicate: POFATU ID: "{0.id}", Method code: "{0.method_id}"'.format(sample))
+    for sample, measurements in samples:
+        if sample.id in data['Sample']:
+            print('duplicate: POFATU ID: "{0.id}"'.format(sample))
             continue
-        vsid = '{0}-{1}-{2}'.format(sample.category, sample.sample.source_id, slug(sample.location.name))
+        vsid = '{0}-{1}-{2}'.format(sample.category, sample.source_id, slug(sample.location.name))
         vs = data['ValueSet'].get(vsid)
         if not vs:
             vs = data.add(
@@ -126,11 +126,11 @@ def main(args):
                 id=vsid,
                 language=data['Location'][sample.location.name],
                 parameter=data['Parameter'][sample.category.lower()],
-                contribution=data['PofatuContribution'][sample.sample.source_id],
+                contribution=data['PofatuContribution'][sample.source_id],
             )
-        v = data.add(models.Sample, sample.uid, id=slug(sample.uid), name=sample.uid, valueset=vs)
+        v = data.add(models.Sample, sample.id, id=slug(sample.id, lowercase=False), name=sample.id, valueset=vs)
         DBSession.add(models.SampleReference(
-            description='sample', sample=v, source=data['Source'][refkey(sample.sample.source_id)]))
+            description='sample', sample=v, source=data['Source'][refkey(sample.source_id)]))
 
         for sid in sample.site.source_ids:
             DBSession.add(models.SampleReference(
@@ -140,30 +140,20 @@ def main(args):
             DBSession.add(models.SampleReference(
                 description='artefact', sample=v, source=data['Source'][refkey(sid)]))
 
-        for i, (k, val) in enumerate(sample.data.items(), start=1):
-            val, less, precision = val
-            if val is not None:
-                pid = '{0}-{1}'.format(slug(k, lowercase=False), i)
-                p = data['UnitParameter'].get(pid)
-                if not p:
-                    p = data.add(common.UnitParameter, pid, id=pid, name=k)
-                mm = data.add(
-                    models.Measurement, None,
-                    value=val,
-                    less=less,
-                    precision=precision,
-                    sample=v,
-                    unitparameter=p,
-                )
-                mid = (sample.method_id.lower(), k.split()[0].lower())
-                ms = methods.get(mid)
-                if not ms:
-                    missing_method.update([mid])
-                else:
-                    for m in ms:
-                        models.MeasurementMethod(method=m, measurement=mm)
-    for k, v in missing_method.most_common():
-        print(k, v)
+        for i, (measurement, analysis) in enumerate(measurements, start=1):
+            pid = '{0}-{1}'.format(slug(measurement.parameter, lowercase=False), i)
+            p = data['UnitParameter'].get(pid)
+            if not p:
+                p = data.add(common.UnitParameter, pid, id=pid, name=measurement.parameter)
+            mm = data.add(
+                models.Measurement, None,
+                value=measurement.value,
+                less=measurement.less,
+                precision=measurement.precision,
+                sample=v,
+                unitparameter=p,
+                method=data['Method'].get(measurement.method_uid),
+            )
     return
 
 
