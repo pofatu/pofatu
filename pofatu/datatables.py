@@ -1,6 +1,7 @@
 from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCol
 from clld.web.datatables.value import Values
 from clld.web.datatables.contribution import Contributions
+from clld.web.datatables.unitparameter import Unitparameters
 from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML
 from clld.db.util import get_distinct_values
@@ -10,24 +11,9 @@ from clld.db.models import common
 from pofatu import models
 
 
-class RefCol(Col):
-    __kw__ = dict(bSearchable=False)
-
-    def order(self):
-        return Artefact.source_pk
-
-    def format(self, item):
-        if item.source:
-            return link(self.dt.req, item.source)
-        return ''
-
-
 class ValueCol(Col):
     def format(self, item):
-        return '{0}{1}{2}'.format(
-            '< ' if item.less else '',
-            item.value,
-            '± {0}'.format(item.precision) if item.precision is not None else '')
+        return item.as_string()
 
 
 class Measurements(DataTable):
@@ -82,7 +68,21 @@ class PofatuContributions(Contributions):
         ]
 
 
+class Params(Unitparameters):
+    def col_defs(self):
+        return [
+            LinkCol(self, 'name'),
+            Col(self, 'min', model_col=models.Param.min),
+            Col(self, 'max', model_col=models.Param.max),
+            Col(self, 'mean', model_col=models.Param.mean),
+            Col(self, 'median', model_col=models.Param.median),
+            Col(self, '# samples', model_col=models.Param.count_values),
+        ]
+
+
+
 def includeme(config):
     config.register_datatable('contributions', PofatuContributions)
     config.register_datatable('values', Samples)
+    config.register_datatable('unitparameters', Params)
     config.register_datatable('measurements', Measurements)

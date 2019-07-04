@@ -69,6 +69,16 @@ class SampleReference(Base, HasSourceMixin):
     sample = relationship(Sample, innerjoin=True, backref="references")
 
 
+@implementer(interfaces.IUnitParameter)
+class Param(CustomModelMixin, UnitParameter):
+    pk = Column(Integer, ForeignKey('unitparameter.pk'), primary_key=True)
+    min = Column(Float)
+    max = Column(Float)
+    mean = Column(Float)
+    median = Column(Float)
+    count_values = Column(Integer)
+
+
 @implementer(IMethod)
 class Method(Base, IdNameDescriptionMixin):
     code = Column(Unicode)
@@ -81,14 +91,24 @@ class Method(Base, IdNameDescriptionMixin):
 
 @implementer(IMeasurement)
 class Measurement(Base):
-    __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk'),)
+    __table_args__ = (UniqueConstraint('sample_pk', 'unitparameter_pk', 'method_pk'),)
 
     value = Column(Float)
     less = Column(Boolean)
     precision = Column(Float)
+    sigma = Column(Integer)
     sample_pk = Column(Integer, ForeignKey('sample.pk'), nullable=False)
     sample = relationship(Sample, innerjoin=True, backref="values")
     unitparameter_pk = Column(Integer, ForeignKey('unitparameter.pk'), nullable=False)
     unitparameter = relationship(UnitParameter, innerjoin=True, backref="values")
     method_pk = Column(Integer, ForeignKey('method.pk'))
     method = relationship(Method, innerjoin=True, backref="measurement_assocs")
+
+
+    def as_string(self):
+        res = '{0}{1}'.format('\u2264' if self.less else '', self.value)
+        if self.precision:
+            res += '±{0}'.format(self.precision)
+        if self.sigma:
+            res += '{0}σ'.format(self.sigma)
+        return res
