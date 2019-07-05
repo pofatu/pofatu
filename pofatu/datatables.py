@@ -1,3 +1,4 @@
+from sqlalchemy.orm import joinedload
 from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCol
 from clld.web.datatables.value import Values
 from clld.web.datatables.contribution import Contributions
@@ -46,6 +47,28 @@ class Measurements(DataTable):
         return res
 
 
+class RegionCol(Col):
+    def format(self, item):
+        return item.valueset.language.region
+
+    def order(self):
+        return models.Location.region
+
+    def search(self, qs):
+        return models.Location.region == qs
+
+
+class SubRegionCol(Col):
+    def format(self, item):
+        return item.valueset.language.subregion
+
+    def order(self):
+        return models.Location.subregion
+
+    def search(self, qs):
+        return models.Location.subregion.contains(qs)
+
+
 class Samples(Values):
     def col_defs(self):
         res = [LinkCol(self, 'sample', model_col=common.Value.name)]
@@ -55,6 +78,11 @@ class Samples(Values):
             res.append(LinkCol(self, 'contribution', get_object=lambda v: v.valueset.contribution))
         if self.contribution:
             res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
+        if not self.language:
+            res.extend([
+                RegionCol(self, 'region', choices=get_distinct_values(models.Location.region)),
+                SubRegionCol(self, 'region'),
+            ])
         return res
 
 

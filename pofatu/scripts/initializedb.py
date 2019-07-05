@@ -64,9 +64,9 @@ def main(args):
                 loc.name,
                 id=slug(loc.name),
                 name=loc.name,
-                loc1=loc.loc1,
-                loc2=loc.loc2,
-                loc3=loc.loc3,
+                region=loc.loc1.replace('_', ' '),
+                subregion=loc.loc2,
+                location=loc.loc3,
                 description=loc.comment,
                 latitude=loc.latitude,
                 longitude=loc.longitude,
@@ -125,7 +125,12 @@ def main(args):
                 parameter=data['Parameter'][sample.category.lower()],
                 contribution=data['PofatuContribution'][sample.source_id],
             )
-        v = data.add(models.Sample, sample.id, id=slug(sample.id, lowercase=False), name=sample.id, valueset=vs)
+        v = data.add(
+            models.Sample,
+            sample.id,
+            id=slug(sample.id, lowercase=False),
+            name=sample.id,
+            valueset=vs)
         DBSession.add(models.SampleReference(
             description='sample', sample=v, source=data['Source'][refkey(sample.source_id)]))
 

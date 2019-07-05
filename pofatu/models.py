@@ -37,9 +37,9 @@ class PofatuContribution(CustomModelMixin, Contribution):
 @implementer(interfaces.ILanguage)
 class Location(CustomModelMixin, Language):
     pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
-    loc1 = Column(Unicode)
-    loc2 = Column(Unicode)
-    loc3 = Column(Unicode)
+    region = Column(Unicode)
+    subregion = Column(Unicode)
+    location = Column(Unicode)
     elevation = Column(Unicode)
 
 
@@ -51,7 +51,6 @@ class Sample(CustomModelMixin, Value):
     site_context = Column(Unicode)
     type = Column(Unicode)
     tectonic_setting = Column(Unicode)
-    location = Column(Unicode)
     source_pk = Column(Integer, ForeignKey('source.pk'))
     source = relationship(Source)
 
