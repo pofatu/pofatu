@@ -81,7 +81,7 @@ class Samples(Values):
         if not self.language:
             res.extend([
                 RegionCol(self, 'region', choices=get_distinct_values(models.Location.region)),
-                SubRegionCol(self, 'region'),
+                SubRegionCol(self, 'subregion'),
             ])
         return res
 
