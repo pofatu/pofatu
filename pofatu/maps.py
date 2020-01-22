@@ -2,48 +2,33 @@ from base64 import b64encode
 
 from clld.web.maps import Map, Legend, Layer
 from clld.web.util.htmllib import HTML
-from clld.lib.svg import icon, data_url
-
-from pofatu.models import ROCKSOURCETYPES
-
-
-class ArtefactsMap(Map):
-    def get_options(self):
-        res = Map.get_options(self)
-        res['max_zoom'] = 15
-        res['base_layer'] = 'OpenTopoMap'
-        return res
+from clld.web.adapters.geojson import GeoJson, get_lonlat
+from clldutils.svg import icon, data_url
 
 
-class SourcesMap(Map):
-    def get_options(self):
-        res = Map.get_options(self)
-        res['max_zoom'] = 15
-        res['base_layer'] = 'OpenTopoMap'
-        res['info_route'] = 'rocksource_alt'
-        res['icons'] = 'div'
-        return res
+class SampleGeoJson(GeoJson):
+    def feature_iterator(self, ctx, req):
+        return [ctx]
+
+
+class SampleMap(Map):
 
     def get_layers(self):
-        for name in ROCKSOURCETYPES:
-            yield Layer(
-                name,
-                name,
-                self.req.route_url('rocksources_alt', ext='geojson', _query=dict(type=name)))
+        yield Layer(
+            self.ctx.id,
+            self.ctx.name,
+            SampleGeoJson(self.ctx).render(self.ctx, self.req, dump=False))
 
-    #def get_legends(self):
-    #    def make_item(label, color):
-    #        return HTML.span(
-    #            HTML.img(
-    #                width=16,
-    #                height=16,
-    #                src=data_url(icon('s' + color[1:]))),
-    #            HTML.span(label, style='padding-left:5px'),
-    #            style='padding-left:5px')
-    #    items = [make_item(n, c) for n, c in ROCKSOURCETYPES.items()]
-    #    yield Legend(self, 'rock types', items)
+    def get_default_options(self):
+        return {
+            'base_layer': "Esri.WorldImagery",
+            'center': list(reversed(get_lonlat(self.ctx) or [0, 0])),
+            'max_zoom': 25,
+            'no_popup': True,
+            'no_link': True,
+            'sidebar': True}
+
 
 
 def includeme(config):
-    config.register_map('languages', ArtefactsMap)
-    config.register_map('rocksources', SourcesMap)
+    config.register_map('value', SampleMap)

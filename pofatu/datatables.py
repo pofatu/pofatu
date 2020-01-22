@@ -1,9 +1,7 @@
-from sqlalchemy.orm import joinedload
-from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCol
+from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCol, DetailsRowLinkCol
 from clld.web.datatables.value import Values
 from clld.web.datatables.contribution import Contributions
 from clld.web.datatables.unitparameter import Unitparameters
-from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML
 from clld.db.util import get_distinct_values
 
@@ -18,21 +16,21 @@ class ValueCol(Col):
 
 
 class Measurements(DataTable):
-    __constraints__ = [models.Sample, common.UnitParameter]
+    __constraints__ = [models.Analysis, common.UnitParameter]
 
     def base_query(self, query):
-        if self.sample:
+        if self.analysis:
             query = query.join(models.Measurement.unitparameter)
-            return query.filter(models.Measurement.sample_pk == self.sample.pk)
+            return query.filter(models.Measurement.analysis_pk == self.analysis.pk)
 
         if self.unitparameter:
-            query = query.join(models.Measurement.sample)
+            query = query.join(models.Measurement.analysis)
             return query.filter(models.Measurement.unitparameter_pk == self.unitparameter.pk)
 
         return query.outerjoin(models.Measurement.method)
 
     def col_defs(self):
-        if self.sample:
+        if self.analysis:
             res = [
                 LinkCol(self, 'parameter', get_object=lambda i: i.unitparameter, model_col=common.UnitParameter.name)
             ]
@@ -43,7 +41,7 @@ class Measurements(DataTable):
         else:
             res = []
         res.append(ValueCol(self, 'value'))
-        res.append(LinkCol(self, 'method', get_object=lambda i: i.method, bSearchable=False, bSortable=False))
+        res.append(DetailsRowLinkCol(self, 'method', button_text='method'))
         return res
 
 

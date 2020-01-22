@@ -5,7 +5,6 @@ from clld.web.adapters.geojson import GeoJson
 from clld.db.meta import DBSession
 
 from pofatu.interfaces import ISite
-from pofatu.models import ROCKSOURCETYPES
 
 RockSource = namedtuple('RockSource', 'id name type latitude longitude')
 

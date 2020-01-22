@@ -2,7 +2,7 @@ from pyramid.config import Configurator
 
 # we must make sure custom models are known at database initialization!
 from pofatu import models
-from pofatu.interfaces import ISite, IMeasurement, IMethod
+from pofatu.interfaces import IMeasurement, IMethod
 
 from clld.web import app
 
@@ -31,9 +31,11 @@ def main(global_config, **settings):
     config.include('clldmpg')
     config.register_resource('measurement', models.Measurement, IMeasurement, with_index=True)
     config.register_resource('method', models.Method, IMethod, with_index=True)
-    menuitems = config.registry.settings['clld.menuitems_list']
     config.register_menu(
-        ('Artefacts', lambda ctx, req: (req.route_url('parameter', id='artefact'), 'Artefacts')),
+        ('About', lambda ctx, req: (req.route_url('about'), 'About')),
+        ('Contributions', lambda ctx, req: (req.route_url('contributions'), 'Contributions')),
         ('Sources', lambda ctx, req: (req.route_url('parameter', id='source'), 'Sources')),
-        *menuitems)
+        ('Artefacts', lambda ctx, req: (req.route_url('parameter', id='artefact'), 'Artefacts')),
+        ('References', lambda ctx, req: (req.route_url('sources'), 'References')),
+    )
     return config.make_wsgi_app()
