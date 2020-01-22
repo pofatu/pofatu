@@ -64,6 +64,8 @@ def main(args):
 
     for rec in ds.iterbib():
         rec.genre = bibtex.EntryType.from_string(ENTRY_TYPES.get(rec.genre, rec.genre))
+        if 'date' in rec:
+            rec['year'] = rec.pop('date')
         data.add(common.Source, rec.id.replace('_', '-').lower(), _obj=bibtex2source(rec, lowercase_id=False))
 
     analyses = list(ds.iterdata())
@@ -77,6 +79,7 @@ def main(args):
         c = p.centroid
         return c.x, (c.y - 360) if c.y > 180 else c.y
 
+    artefacts = collections.defaultdict(dict)
     midpoints = {}
     for a in analyses:
         l = a.sample.location
@@ -85,6 +88,10 @@ def main(args):
             midpoints[lid] = set()
         if l.latitude is not None and l.longitude is not None:
             midpoints[lid].add((l.latitude, l.longitude))
+        art = a.sample.artefact
+        for attr_ in ['name', 'category', 'collection_type']:
+            if not artefacts[slug(art.id)].get(attr_):
+               artefacts[slug(art.id)][attr_] = getattr(art, attr_)
 
     midpoints = {k: midpoint(v) if v else (None, None) for k, v in midpoints.items()}
 
@@ -111,9 +118,19 @@ def main(args):
                 id=site.id,
                 name=site.label,
             )
-            #
-            # FIXME: add site refs!
-            #
+            for ref in site.source_ids:
+                DBSession.add(models.SiteReference(site=s, source=data['Source'][refkey(ref)]))
+
+        artefact = analysis.sample.artefact
+        if slug(artefact.id) not in data['Artefact']:
+            a = data.add(
+                models.Artefact,
+                slug(artefact.id),
+                id=slug(artefact.id),
+                **artefacts[slug(artefact.id)],
+            )
+            for ref in artefact.source_ids:
+                DBSession.add(models.ArtefactReference(artefact=a, source=data['Source'][refkey(ref)]))
 
     # Add contributions
     for contrib in ds.itercontributions():
@@ -194,21 +211,11 @@ def main(args):
                 domainelement=data['DomainElement'][sample.category],
                 valueset=vs,
                 site=data['Site'][sample.site.id],
+                artefact_comment=sample.artefact.comment,
+                artefact_attributes=sample.artefact.attributes,
+                artefact=data['Artefact'][slug(sample.artefact.id)],
             )
-            #DBSession.add(common.ValueSetReference(
-            #    description='sample',
-            #    valueset=vs,
-            #    source=data['Source'][refkey(sample.source_id)]))
-
-            #for sid in sample.site.source_ids:
-            #    DBSession.add(common.ValueSetReference(
-            #        description='site',
-            #        valueset=vs,
-            #        source=data['Source'][refkey(sid)]))
-
-            #for sid in sample.artefact.source_ids:
-            #    DBSession.add(common.ValueSetReference(
-            #        description='artefact', valueset=vs, source=data['Source'][refkey(sid)]))
+            DBSession.add(models.SampleReference(sample=v, source=data['Source'][refkey(sample.source_id)]))
 
         a = data.add(
             models.Analysis,

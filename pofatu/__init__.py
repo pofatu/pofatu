@@ -6,7 +6,6 @@ from pofatu.interfaces import IMeasurement, IMethod
 
 from clld.web import app
 
-
 _ = lambda s: s
 _('Language')
 _('Languages')
@@ -34,8 +33,7 @@ def main(global_config, **settings):
     config.register_menu(
         ('About', lambda ctx, req: (req.route_url('about'), 'About')),
         ('Contributions', lambda ctx, req: (req.route_url('contributions'), 'Contributions')),
-        ('Sources', lambda ctx, req: (req.route_url('parameter', id='source'), 'Sources')),
-        ('Artefacts', lambda ctx, req: (req.route_url('parameter', id='artefact'), 'Artefacts')),
+        ('Samples', lambda ctx, req: (req.route_url('values'), 'Samples')),
         ('References', lambda ctx, req: (req.route_url('sources'), 'References')),
     )
     return config.make_wsgi_app()

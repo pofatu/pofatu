@@ -4,15 +4,21 @@
 
 <%def name="sidebar()">
     <div class="well">
-        <h4>Source</h4>
-        ${h.link(req, ctx.source, label=ctx.source.name)}.
-        ${h.link(req, ctx.source, label=ctx.source.description)}
-        <h4>Description</h4>
-        <p>${ctx.description}</p>
+        <h4>Sources</h4>
+        <ul>
+            % for ref in ctx.references:
+                <li>
+                    ${h.link(req, ref.source, label=ref.source.name)}.
+                    ${h.link(req, ref.source, label=ref.source.description)}
+                </li>
+            % endfor
+        </ul>
     </div>
 </%def>
 
-<h2>${_('Contribution')} ${ctx.name}</h2>
+<h2>${ctx.name}</h2>
+<p>${ctx.description}</p>
+
 
 ${util.data()}
 

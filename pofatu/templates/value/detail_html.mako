@@ -4,9 +4,11 @@
 
 
 <%def name="sidebar()">
-    <%util:well title="Location">
-        ${request.map.render()}
-        ${h.format_coordinates(ctx)}
+    <div class="accordion" id="sidebar-accordion" style="margin-top: 1em; clear: right;">
+    <%util:accordion_group eid="acc-location" parent="sidebar-accordion" title="Location" open="${True}">
+        <p>${h.link(request, ctx.valueset.language)}</p>
+    ${request.map.render()}
+    ${h.format_coordinates(ctx)}
         <dl>
             % if ctx.elevation:
                 <dt>Elevation</dt>
@@ -16,10 +18,21 @@
                 <dt>Comment</dt>
                 <dd>${ctx.location_comment}</dd>
             % endif
-            <dd>${h.link(request, ctx.valueset.language)}</dd>
         </dl>
-    </%util:well>
-    <%util:well title="Site">
+    </%util:accordion_group>
+    <%util:accordion_group eid="acc-artefact" parent="sidebar-accordion" title="Artefact">
+        <dl>
+            <dt>Name</dt>
+            <dd>${ctx.artefact.name}</dd>
+            % if ctx.artefact.category:
+                <dt>Category</dt>
+                <dd>${ctx.artefact.category}</dd>
+            % endif
+            <dt>References</dt>
+            <dd>${h.linked_references(req, ctx.artefact)}</dd>
+        </dl>
+    </%util:accordion_group>
+    <%util:accordion_group eid="acc-site" parent="sidebar-accordion" title="Site">
         <dl>
             % if ctx.site:
                 <dt>Name</dt>
@@ -37,29 +50,16 @@
                 <dt>Stratigraphic position</dt>
                 <dd>${ctx.site_stratigraphic_position}</dd>
             % endif
+            <dt>References</dt>
+            <dd>${h.linked_references(req, ctx.site)}</dd>
         </dl>
-
-    </%util:well>
-
-    <div class="well">
-        <h4>Sources</h4>
-        <dl>
-        % for type_, sources in ctx.iter_grouped_sources():
-            <dt>${type_.capitalize()}</dt>
-            <dd>
-                <ul class="unstyled">
-                    % for source in sources:
-                        <li>${h.link(request, source)}</li>
-                    % endfor
-                </ul>
-            </dd>
-        % endfor
-        </dl>
-    </div>
+    </%util:accordion_group>
 </%def>
 
 
-<h2>${_('Value')} ${ctx.name}</h2>
+    <h2>${ctx.domainelement.name.capitalize()} ${ctx.name}</h2>
+
+    From reference ${h.linked_references(req, ctx)} in contribution ${h.link(req, ctx.valueset.contribution)}.
 
 % if len(ctx.analyses) > 1:
     <h3>Analyses</h3>

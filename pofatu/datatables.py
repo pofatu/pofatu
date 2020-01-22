@@ -2,6 +2,7 @@ from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCo
 from clld.web.datatables.value import Values
 from clld.web.datatables.contribution import Contributions
 from clld.web.datatables.unitparameter import Unitparameters
+from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML
 from clld.db.util import get_distinct_values
 
@@ -67,15 +68,25 @@ class SubRegionCol(Col):
         return models.Location.subregion.contains(qs)
 
 
+class SampleIdCol(LinkCol):
+    def get_attrs(self, item):
+        return {'label': item.id}
+
+
+class CategoryCol(LinkCol):
+    def get_attrs(self, item):
+        return {'label': item.domainelement.name}
+
+
 class Samples(Values):
     def col_defs(self):
-        res = [LinkCol(self, 'sample', model_col=common.Value.name)]
+        res = [SampleIdCol(self, 'sample', model_col=common.Value.id)]
         if self.language:
-            res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
+            res.append(CategoryCol(self, 'type', get_object=lambda v: v.valueset.parameter))
         if self.parameter:
             res.append(LinkCol(self, 'contribution', get_object=lambda v: v.valueset.contribution))
         if self.contribution:
-            res.append(LinkCol(self, 'type', get_object=lambda v: v.valueset.parameter))
+            res.append(CategoryCol(self, 'type', get_object=lambda v: v.valueset.parameter))
         if not self.language:
             res.extend([
                 RegionCol(self, 'region', choices=get_distinct_values(models.Location.region)),
@@ -84,13 +95,18 @@ class Samples(Values):
         return res
 
 
+class SourcesCol(Col):
+    def format(self, item):
+        return HTML.ul(*[HTML.li(link(self.dt.req, r.source)) for r in item.references])
+
+
 class PofatuContributions(Contributions):
     def col_defs(self):
         return [
             IdCol(self, 'id'),
             Col(self, 'name', sTitle='Title'),
             Col(self, 'description', sTitle='Abstract'),
-            LinkCol(self, 'source', get_object=lambda i: i.source, bSearchable=False, bSortable=False)
+            SourcesCol(self, 'sources', bSearchable=False, bSortable=False)
         ]
 
 

@@ -17,7 +17,7 @@ from clld.db.meta import Base, CustomModelMixin
 from clld.db.models.common import (
     Language, Source, Value, Contribution, UnitParameter, HasSourceMixin, IdNameDescriptionMixin,
 )
-from pofatu.interfaces import IAnalysis, IMeasurement, IMethod, ISite
+from pofatu.interfaces import IAnalysis, IMeasurement, IMethod, ISite, IArtefact
 
 
 @implementer(interfaces.ILanguage)
@@ -31,6 +31,26 @@ class Location(CustomModelMixin, Language):
 @implementer(ISite)
 class Site(Base, IdNameDescriptionMixin):
     pass
+
+
+class SiteReference(Base, HasSourceMixin):
+    __table_args__ = (UniqueConstraint('site_pk', 'source_pk', 'description'),)
+
+    site_pk = Column(Integer, ForeignKey('site.pk'), nullable=False)
+    site = relationship(Site, innerjoin=True, backref="references")
+
+
+@implementer(IArtefact)
+class Artefact(Base, IdNameDescriptionMixin):
+    category = Column(Unicode)
+    collection_type = Column(Unicode)
+
+
+class ArtefactReference(Base, HasSourceMixin):
+    __table_args__ = (UniqueConstraint('artefact_pk', 'source_pk', 'description'),)
+
+    artefact_pk = Column(Integer, ForeignKey('artefact.pk'), nullable=False)
+    artefact = relationship(Artefact, innerjoin=True, backref="references")
 
 
 @implementer(interfaces.IValue)
@@ -61,11 +81,11 @@ class Sample(CustomModelMixin, Value):
     site_comment = Column(Unicode)
     site_stratigraphic_position = Column(Unicode)
 
-    def iter_grouped_sources(self):
-        for type_ in ['data', 'artefact', 'site']:
-            res = [ref.source for ref in self.references if ref.description == type_]
-            if res:
-                yield type_, res
+    artefact_pk = Column(Integer, ForeignKey('artefact.pk'), nullable=False)
+    artefact = relationship(Artefact, innerjoin=True, backref='samples')
+
+    artefact_attributes = Column(Unicode)
+    artefact_comment = Column(Unicode)
 
 
 class SampleReference(Base, HasSourceMixin):

@@ -29,6 +29,20 @@ class SampleMap(Map):
             'sidebar': True}
 
 
+class SamplesMap(Map):
+    def get_layers(self):
+        """Generate the list of layers.
+
+        :return: list or generator of :py:class:`clld.web.maps.Layer` instances.
+        """
+        route_params = {'ext': 'geojson'}
+        yield Layer(
+            'locations',
+            'Locations',
+            self.req.route_url('languages_alt', **route_params))
+
+
 
 def includeme(config):
     config.register_map('value', SampleMap)
+    config.register_map('values', SamplesMap)
