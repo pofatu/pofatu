@@ -31,7 +31,7 @@
             <dt>References</dt>
             <dd>
                 <ul class="unstyled">
-                    % for src in ctx.source_dict['artefact']:
+                    % for src in ctx.source_dict.get('artefact', []):
                         <li>${h.link(req, src)}</li>
                     % endfor
                 </ul>
@@ -59,7 +59,7 @@
             <dt>References</dt>
             <dd>
                 <ul class="unstyled">
-                    % for src in ctx.source_dict['site']:
+                    % for src in ctx.source_dict.get('site', []):
                         <li>${h.link(req, src)}</li>
                     % endfor
                 </ul>
