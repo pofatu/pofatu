@@ -25,7 +25,7 @@ class Measurements(DataTable):
             return query.filter(models.Measurement.analysis_pk == self.analysis.pk)
 
         if self.unitparameter:
-            query = query.join(models.Measurement.analysis)
+            query = query.join(models.Measurement.analysis).join(models.Analysis.sample)
             return query.filter(models.Measurement.unitparameter_pk == self.unitparameter.pk)
 
         return query.outerjoin(models.Measurement.method)
@@ -37,7 +37,7 @@ class Measurements(DataTable):
             ]
         elif self.unitparameter:
             res = [
-                LinkCol(self, 'sample', get_object=lambda i: i.sample, model_col=common.Value.name)
+                IdCol(self, 'sample', get_object=lambda i: i.analysis.sample, model_col=common.Value.id)
             ]
         else:
             res = []
@@ -79,14 +79,23 @@ class CategoryCol(LinkCol):
 
 
 class Samples(Values):
+    def base_query(self, query):
+        query = query.join(common.DomainElement)
+        return query
+
     def col_defs(self):
-        res = [SampleIdCol(self, 'sample', model_col=common.Value.id)]
-        if self.language:
-            res.append(CategoryCol(self, 'type', get_object=lambda v: v.valueset.parameter))
+        res = [
+            SampleIdCol(self, 'sample', model_col=common.Value.id)]
+        if not self.parameter:
+            res.append(CategoryCol(
+                self,
+                'type',
+                choices=get_distinct_values(common.DomainElement.name),
+                model_col=common.DomainElement.name))
         if self.parameter:
             res.append(LinkCol(self, 'contribution', get_object=lambda v: v.valueset.contribution))
         if self.contribution:
-            res.append(CategoryCol(self, 'type', get_object=lambda v: v.valueset.parameter))
+            pass
         if not self.language:
             res.extend([
                 RegionCol(self, 'region', choices=get_distinct_values(models.Location.region)),

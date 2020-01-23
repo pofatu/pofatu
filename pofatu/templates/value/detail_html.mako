@@ -23,20 +23,26 @@
     <%util:accordion_group eid="acc-artefact" parent="sidebar-accordion" title="Artefact">
         <dl>
             <dt>Name</dt>
-            <dd>${ctx.artefact.name}</dd>
-            % if ctx.artefact.category:
+            <dd>${ctx.artefact_name}</dd>
+            % if ctx.artefact_category:
                 <dt>Category</dt>
-                <dd>${ctx.artefact.category}</dd>
+                <dd>${ctx.artefact_category}</dd>
             % endif
             <dt>References</dt>
-            <dd>${h.linked_references(req, ctx.artefact)}</dd>
+            <dd>
+                <ul class="unstyled">
+                    % for src in ctx.source_dict['artefact']:
+                        <li>${h.link(req, src)}</li>
+                    % endfor
+                </ul>
+            </dd>
         </dl>
     </%util:accordion_group>
     <%util:accordion_group eid="acc-site" parent="sidebar-accordion" title="Site">
         <dl>
-            % if ctx.site:
+            % if ctx.site_name:
                 <dt>Name</dt>
-                <dd>${ctx.site.name}</dd>
+                <dd>${ctx.site_name}</dd>
             % endif
             % if ctx.site_context:
                 <dt>Context</dt>
@@ -51,7 +57,13 @@
                 <dd>${ctx.site_stratigraphic_position}</dd>
             % endif
             <dt>References</dt>
-            <dd>${h.linked_references(req, ctx.site)}</dd>
+            <dd>
+                <ul class="unstyled">
+                    % for src in ctx.source_dict['site']:
+                        <li>${h.link(req, src)}</li>
+                    % endfor
+                </ul>
+            </dd>
         </dl>
     </%util:accordion_group>
 </%def>
@@ -59,7 +71,7 @@
 
     <h2>${ctx.domainelement.name.capitalize()} ${ctx.name}</h2>
 
-    From reference ${h.linked_references(req, ctx)} in contribution ${h.link(req, ctx.valueset.contribution)}.
+    From reference ${h.link(req, ctx.source_dict['sample'][0])} in contribution ${h.link(req, ctx.valueset.contribution)}.
 
 % if len(ctx.analyses) > 1:
     <h3>Analyses</h3>
@@ -70,7 +82,6 @@
     </ul>
 % else:
     <div>
-
         <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, analysis=ctx.analyses[0]) %>
         ${dt.render()}
     </div>

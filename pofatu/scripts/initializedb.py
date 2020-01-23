@@ -18,18 +18,6 @@ import pofatu
 from pofatu import models
 
 
-def refkey(s):
-    return {
-        'metraux-1940-ethnology': 'metraux-1940-easter',
-        'mcalister-2017-plosone': 'mcalister-2017-po',
-        'weisler 1993 phd': 'weisler-1993-phd',
-        'mccoy-1993-kahoolawe': 'mccoy-1993-puumoiwi',
-        'anderson 1981a': 'anderson-1981-jrsnz',
-        'barber & walter 2002': 'barber-2002-anz',
-        'gay 2004': 'gay-2004-ba',
-    }.get(s.lower(), s.lower())
-
-
 ENTRY_TYPES = {
     'thesis': 'phdthesis',
     'report': 'techreport',
@@ -66,7 +54,7 @@ def main(args):
         rec.genre = bibtex.EntryType.from_string(ENTRY_TYPES.get(rec.genre, rec.genre))
         if 'date' in rec:
             rec['year'] = rec.pop('date')
-        data.add(common.Source, rec.id.replace('_', '-').lower(), _obj=bibtex2source(rec, lowercase_id=False))
+        data.add(common.Source, rec.id, _obj=bibtex2source(rec, lowercase_id=False))
 
     analyses = list(ds.iterdata())
 
@@ -110,28 +98,6 @@ def main(args):
                 location=loc.loc3,
             )
 
-        site = analysis.sample.site
-        if site.id not in data['Site']:
-            s = data.add(
-                models.Site,
-                site.id,
-                id=site.id,
-                name=site.label,
-            )
-            for ref in site.source_ids:
-                DBSession.add(models.SiteReference(site=s, source=data['Source'][refkey(ref)]))
-
-        artefact = analysis.sample.artefact
-        if slug(artefact.id) not in data['Artefact']:
-            a = data.add(
-                models.Artefact,
-                slug(artefact.id),
-                id=slug(artefact.id),
-                **artefacts[slug(artefact.id)],
-            )
-            for ref in artefact.source_ids:
-                DBSession.add(models.ArtefactReference(artefact=a, source=data['Source'][refkey(ref)]))
-
     # Add contributions
     for contrib in ds.itercontributions():
         contribution = data.add(
@@ -151,7 +117,7 @@ def main(args):
         for ref in contrib.source_ids:
             DBSession.add(common.ContributionReference(
                 contribution=contribution,
-                source=data['Source'][refkey(ref)],
+                source=data['Source'][ref],
             ))
             data['Contribution'][ref] = contribution
 
@@ -164,12 +130,27 @@ def main(args):
             name=method.label,
             code=method.code,
             parameter=method.parameter.strip(),
-            reference_sample='; '.join([r.sample_name for r in method.references]),
-            laboratory=method.laboratory,
             technique=method.technique,
             instrument=method.instrument,
+            laboratory=method.laboratory,
+            analyst=method.analyst,
+            date=method.date,
+            comment=method.comment,
+            detection_limit=method.detection_limit,
+            detection_limit_unit=method.detection_limit_unit,
+            total_procedural_blank_value=method.total_procedural_blank_value,
+            total_procedural_unit=method.total_procedural_unit,
         )
         methods[(m.code.lower(), m.parameter.lower())].append(m)
+        for ref in method.references:
+            DBSession.add(models.MethodReference(
+                method=m,
+                sample_name=ref.sample_name,
+                sample_measured_value=ref.sample_measured_value,
+                uncertainty=ref.uncertainty,
+                uncertainty_unit=ref.uncertainty_unit,
+                number_of_measurements=ref.number_of_measurements,
+            ))
 
     parameter = data.add(common.Parameter, 'c', id='category', name='Sample category')
     for i, opt in enumerate(attr.fields_dict(pypofatu.models.Sample)['category'].validator.options, start=1):
@@ -199,23 +180,42 @@ def main(args):
                 sample.id,
                 id=sample.id.replace('.', '_'),
                 name=sample.id,
-                #petrography=,
-                #analyzed_material=.
+                petrography=sample.petrography,
+                analyzed_material_1=sample.analyzed_material_1,
+                analyzed_material_2=sample.analyzed_material_2,
                 latitude=sample.location.latitude,
                 longitude=sample.location.longitude,
                 elevation=sample.location.elevation,
                 location_comment=sample.location.comment,
+
+                site_name=sample.site.name,
+                site_code=sample.site.code,
                 site_context=sample.site.context,
                 site_comment=sample.site.comment,
                 site_stratigraphic_position=sample.site.stratigraphic_position,
+                site_stratigraphy_comment=sample.site.stratigraphy_comment,
                 domainelement=data['DomainElement'][sample.category],
                 valueset=vs,
-                site=data['Site'][sample.site.id],
+
+                artefact_id=sample.artefact.id,
+                artefact_name=sample.artefact.name,
+                artefact_category=sample.artefact.category,
                 artefact_comment=sample.artefact.comment,
                 artefact_attributes=sample.artefact.attributes,
-                artefact=data['Artefact'][slug(sample.artefact.id)],
+                artefact_collector=sample.artefact.collector,
+                artefact_collection_type=sample.artefact.collection_type,
+                artefact_collection_location=sample.artefact.collection_location,
+                artefact_collection_comment=sample.artefact.collection_comment,
+                artefact_fieldwork_date=sample.artefact.fieldwork_date,
             )
-            DBSession.add(models.SampleReference(sample=v, source=data['Source'][refkey(sample.source_id)]))
+            DBSession.add(models.SampleReference(
+                description='sample', sample=v, source=data['Source'][sample.source_id]))
+            for ref in sample.artefact.source_ids:
+                DBSession.add(models.SampleReference(
+                    description='artefact', sample=v, source=data['Source'][ref]))
+            for ref in sample.site.source_ids:
+                DBSession.add(models.SampleReference(
+                    description='site', sample=v, source=data['Source'][ref]))
 
         a = data.add(
             models.Analysis,

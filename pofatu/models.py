@@ -1,3 +1,5 @@
+import itertools
+
 from zope.interface import implementer
 from sqlalchemy import (
     Column,
@@ -17,7 +19,7 @@ from clld.db.meta import Base, CustomModelMixin
 from clld.db.models.common import (
     Language, Source, Value, Contribution, UnitParameter, HasSourceMixin, IdNameDescriptionMixin,
 )
-from pofatu.interfaces import IAnalysis, IMeasurement, IMethod, ISite, IArtefact
+from pofatu.interfaces import IAnalysis, IMeasurement, IMethod
 
 
 @implementer(interfaces.ILanguage)
@@ -26,31 +28,6 @@ class Location(CustomModelMixin, Language):
     region = Column(Unicode)
     subregion = Column(Unicode)
     location = Column(Unicode)
-
-
-@implementer(ISite)
-class Site(Base, IdNameDescriptionMixin):
-    pass
-
-
-class SiteReference(Base, HasSourceMixin):
-    __table_args__ = (UniqueConstraint('site_pk', 'source_pk', 'description'),)
-
-    site_pk = Column(Integer, ForeignKey('site.pk'), nullable=False)
-    site = relationship(Site, innerjoin=True, backref="references")
-
-
-@implementer(IArtefact)
-class Artefact(Base, IdNameDescriptionMixin):
-    category = Column(Unicode)
-    collection_type = Column(Unicode)
-
-
-class ArtefactReference(Base, HasSourceMixin):
-    __table_args__ = (UniqueConstraint('artefact_pk', 'source_pk', 'description'),)
-
-    artefact_pk = Column(Integer, ForeignKey('artefact.pk'), nullable=False)
-    artefact = relationship(Artefact, innerjoin=True, backref="references")
 
 
 @implementer(interfaces.IValue)
@@ -73,19 +50,35 @@ class Sample(CustomModelMixin, Value):
         doc='geographical longitude in WGS84')
     elevation = Column(Unicode)
     location_comment = Column(Unicode)
+    petrography = Column(Unicode)
+    analyzed_material_1 = Column(Unicode)
+    analyzed_material_2 = Column(Unicode)
 
-    site_pk = Column(Integer, ForeignKey('site.pk'), nullable=False)
-    site = relationship(Site, innerjoin=True, backref='samples')
-
+    site_name = Column(Unicode)
+    site_code = Column(Unicode)
     site_context = Column(Unicode)
     site_comment = Column(Unicode)
     site_stratigraphic_position = Column(Unicode)
+    site_stratigraphy_comment = Column(Unicode)
 
-    artefact_pk = Column(Integer, ForeignKey('artefact.pk'), nullable=False)
-    artefact = relationship(Artefact, innerjoin=True, backref='samples')
-
+    artefact_id = Column(Unicode)
+    artefact_name = Column(Unicode)
+    artefact_category = Column(Unicode)
     artefact_attributes = Column(Unicode)
     artefact_comment = Column(Unicode)
+    artefact_collector = Column(Unicode)
+    artefact_collection_type = Column(Unicode)
+    artefact_fieldwork_date = Column(Unicode)
+    artefact_collection_location = Column(Unicode)
+    artefact_collection_comment = Column(Unicode)
+
+    @property
+    def source_dict(self):
+        res = {}
+        for type_, refs in itertools.groupby(
+                sorted(self.references, key=lambda r: r.description), lambda r: r.description):
+            res[type_] = [r.source for r in refs]
+        return res
 
 
 class SampleReference(Base, HasSourceMixin):
@@ -116,6 +109,20 @@ class Method(Base, IdNameDescriptionMixin):
     analyst = Column(Unicode)
     date = Column(Unicode)
     comment = Column(Unicode)
+    detection_limit = Column(Unicode)
+    detection_limit_unit = Column(Unicode)
+    total_procedural_blank_value = Column(Unicode)
+    total_procedural_unit = Column(Unicode)
+
+
+class MethodReference(Base):
+    sample_name = Column(Unicode)
+    sample_measured_value = Column(Unicode)
+    uncertainty = Column(Unicode)
+    uncertainty_unit = Column(Unicode)
+    number_of_measurements = Column(Unicode)
+    method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
+    method = relationship(Method, innerjoin=True, backref="references")
 
 
 @implementer(IAnalysis)
