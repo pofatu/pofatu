@@ -80,8 +80,11 @@ class CategoryCol(LinkCol):
 
 class Samples(Values):
     def base_query(self, query):
+        query = Values.base_query(self, query)
         query = query.join(common.DomainElement)
-        return query
+        if not any({self.language, self.contribution, self.parameter}):
+            query = query.join(common.Language)
+        return query.distinct()
 
     def col_defs(self):
         res = [
