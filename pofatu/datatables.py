@@ -62,8 +62,8 @@ class Measurements(DataTable):
         else:
             res = []
         res.append(ValueCol(self, 'value'))
-        if self.analysis:
-            res.append(StatsCol(self, 'stats'))
+        #if self.analysis:
+        #    res.append(StatsCol(self, 'stats'))
         res.append(DetailsRowLinkCol(self, 'method', button_text='method'))
         return res
 
