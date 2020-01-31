@@ -106,7 +106,7 @@
             % endfor
         </dl>
     <div>
-        <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, eid='dt-{0}'.format(i), analysis=ctx.analyses[0]) %>
+        <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, eid='dt-{0}'.format(i), analysis=a) %>
         ${dt.render()}
     </div>
 % endfor
