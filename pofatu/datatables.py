@@ -2,6 +2,7 @@ from clld.web.datatables.base import Col, LinkCol, LinkToMapCol, DataTable, IdCo
 from clld.web.datatables.value import Values
 from clld.web.datatables.contribution import Contributions
 from clld.web.datatables.unitparameter import Unitparameters
+from clld.web.datatables.source import Sources
 from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML
 from clld.db.util import get_distinct_values
@@ -11,9 +12,28 @@ from clld.db.models import common
 from pofatu import models
 
 
+class Refs(Sources):
+    def col_defs(self):
+        res = Sources.col_defs(self)
+        res[0].__kw__['button_text'] = 'citation'
+        return res
+
+
 class ValueCol(Col):
     def format(self, item):
         return item.as_string()
+
+
+class StatsCol(Col):
+    __kw__ = {'bSortable': False, 'bSearchable': False, 'sTitle': 'Summary for the measured parameter'}
+
+    def format(self, item):
+        return HTML.ul(*[
+            HTML.li('Min: {0.min:.2f}'.format(item.unitparameter)),
+            HTML.li('Max: {0.max:.2f}'.format(item.unitparameter)),
+            HTML.li('Mean: {0.mean:.2f}'.format(item.unitparameter)),
+            HTML.li('Median: {0.median:.2f}'.format(item.unitparameter)),
+        ], **{'class': 'inline'})
 
 
 class Measurements(DataTable):
@@ -33,7 +53,7 @@ class Measurements(DataTable):
     def col_defs(self):
         if self.analysis:
             res = [
-                LinkCol(self, 'parameter', get_object=lambda i: i.unitparameter, model_col=common.UnitParameter.name)
+                LinkCol(self, 'parameter', get_object=lambda i: i.unitparameter, model_col=common.UnitParameter.name),
             ]
         elif self.unitparameter:
             res = [
@@ -42,6 +62,8 @@ class Measurements(DataTable):
         else:
             res = []
         res.append(ValueCol(self, 'value'))
+        if self.analysis:
+            res.append(StatsCol(self, 'stats'))
         res.append(DetailsRowLinkCol(self, 'method', button_text='method'))
         return res
 
@@ -88,7 +110,9 @@ class Samples(Values):
 
     def col_defs(self):
         res = [
-            SampleIdCol(self, 'sample', model_col=common.Value.id)]
+            SampleIdCol(self, 'sample', model_col=common.Value.id),
+            Col(self, 'artefact', model_col=models.Sample.artefact_id),
+        ]
         if not self.parameter:
             res.append(CategoryCol(
                 self,
@@ -140,3 +164,4 @@ def includeme(config):
     config.register_datatable('values', Samples)
     config.register_datatable('unitparameters', Params)
     config.register_datatable('measurements', Measurements)
+    config.register_datatable('sources', Refs)

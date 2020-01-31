@@ -66,23 +66,47 @@
             </dd>
         </dl>
     </%util:accordion_group>
+    </div>
 </%def>
 
 
     <h2>${ctx.domainelement.name.capitalize()} ${ctx.name}</h2>
 
-    From reference ${h.link(req, ctx.source_dict['sample'][0])} in contribution ${h.link(req, ctx.valueset.contribution)}.
+    From reference ${h.link(req, ctx.source_dict['sample'][0])} in
+    contribution ${h.link(req, ctx.valueset.contribution)}.
 
 % if len(ctx.analyses) > 1:
     <h3>Analyses</h3>
     <ul>
         % for a in ctx.analyses:
-            <li>${a}</li>
+            <li>
+                <a href="#${a.id }">${a}</a>
+                % if a.analyst:
+                    by ${a.analyst} at ${a.laboratory}
+                % endif
+            </li>
         % endfor
     </ul>
-% else:
+% endif
+% for i, a in enumerate(ctx.analyses, start=1):
+    <h4 id="${a.id }">
+        Analysis
+        % if a.analyst:
+            by ${a.analyst} at ${a.laboratory}
+        % endif
+    </h4>
+        <dl>
+            <dt>analyzed material</dt>
+            <dd>${a.analyzed_material_1}; ${a.analyzed_material_2}</dd>
+            % for k in ['sample_preparation', 'chemical_treatment', 'technique']:
+                % if getattr(a, k):
+                    <dt>${k.replace('_', ' ')}</dt>
+                    <dd>${getattr(a, k)}</dd>
+                % endif
+            % endfor
+        </dl>
     <div>
-        <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, analysis=ctx.analyses[0]) %>
+        <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, eid='dt-{0}'.format(i), analysis=ctx.analyses[0]) %>
         ${dt.render()}
     </div>
-% endif
+% endfor

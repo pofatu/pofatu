@@ -1,6 +1,6 @@
 <div>
     <dl class="dl-horizontal">
-        % for attr in ['technique', 'instrument', 'laboratory', 'analyst', 'date', 'reference_sample', 'comment']:
+        % for attr in ['instrument', 'date', 'reference_sample', 'number_of_replicates', 'detection_limit', 'total_procedural_blank_value', 'comment']:
             % if getattr(ctx.method, attr):
                 <dt>${attr.replace('_', ' ')}</dt>
                 <dd>${getattr(ctx.method, attr)}</dd>

@@ -130,10 +130,8 @@ def main(args):
             name=method.label,
             code=method.code,
             parameter=method.parameter.strip(),
-            technique=method.technique,
             instrument=method.instrument,
-            laboratory=method.laboratory,
-            analyst=method.analyst,
+            number_of_replicates=method.number_of_replicates,
             date=method.date,
             comment=method.comment,
             detection_limit=method.detection_limit,
@@ -181,8 +179,6 @@ def main(args):
                 id=sample.id.replace('.', '_'),
                 name=sample.id,
                 petrography=sample.petrography,
-                analyzed_material_1=sample.analyzed_material_1,
-                analyzed_material_2=sample.analyzed_material_2,
                 latitude=sample.location.latitude,
                 longitude=sample.location.longitude,
                 elevation=sample.location.elevation,
@@ -225,7 +221,18 @@ def main(args):
             sample=v,
         )
 
-        for measurement in analysis.measurements:
+        for i, measurement in enumerate(analysis.measurements):
+            if i == 0:
+                method = measurement.method
+                if method:
+                    a.analyzed_material_1=method.analyzed_material_1,
+                    a.analyzed_material_2=method.analyzed_material_2,
+                    a.sample_preparation=method.sample_preparation,
+                    a.chemical_treatment=method.chemical_treatment,
+                    a.technique=method.technique,
+                    a.laboratory=method.laboratory,
+                    a.analyst=method.analyst,
+
             pid = slug(measurement.parameter, lowercase=False)
             p = data['Param'].get(pid)
             if not p:

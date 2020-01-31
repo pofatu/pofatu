@@ -51,8 +51,6 @@ class Sample(CustomModelMixin, Value):
     elevation = Column(Unicode)
     location_comment = Column(Unicode)
     petrography = Column(Unicode)
-    analyzed_material_1 = Column(Unicode)
-    analyzed_material_2 = Column(Unicode)
 
     site_name = Column(Unicode)
     site_code = Column(Unicode)
@@ -102,11 +100,9 @@ class Param(CustomModelMixin, UnitParameter):
 class Method(Base, IdNameDescriptionMixin):
     code = Column(Unicode)
     parameter = Column(Unicode)
+    number_of_replicates = Column(Unicode)
     reference_sample = Column(Unicode)
-    technique = Column(Unicode)
     instrument = Column(Unicode)
-    laboratory = Column(Unicode)
-    analyst = Column(Unicode)
     date = Column(Unicode)
     comment = Column(Unicode)
     detection_limit = Column(Unicode)
@@ -129,6 +125,14 @@ class MethodReference(Base):
 class Analysis(Base, IdNameDescriptionMixin):
     sample_pk = Column(Integer, ForeignKey('sample.pk'))
     sample = relationship(Sample, backref="analyses")
+
+    analyzed_material_1 = Column(Unicode)
+    analyzed_material_2 = Column(Unicode)
+    sample_preparation = Column(Unicode)
+    chemical_treatment = Column(Unicode)
+    technique = Column(Unicode)
+    laboratory = Column(Unicode)
+    analyst = Column(Unicode)
 
 
 @implementer(IMeasurement)

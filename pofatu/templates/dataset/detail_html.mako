@@ -21,9 +21,10 @@
     database presenting geochemical compositions and contextual information for archaeological sources and artefacts.
 </p>
 <p>
-    The data repository includes a compilation of geochemical data and supporting analytical metadata, as well as the
-    archaeological provenance and context for each sample. All information Samples related to sources and artefacts can
-    be accessed on this platform or downloaded there.
+    The ${h.external_link('https://github.com/pofatu/pofatu-data', label='data repository')}
+    includes a compilation of geochemical data and supporting analytical metadata, as well as the
+    archaeological provenance and context for each sample. All information on Samples related to sources and artefacts can
+    be accessed on this platform or <a href="${req.route_url('download')}">downloaded from Zenodo or GitHub</a>.
 </p>
 <p>
     While most prehistoric quarries and surface procurement sources used in the past have yet to be identified,
