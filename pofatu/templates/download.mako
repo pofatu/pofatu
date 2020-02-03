@@ -11,8 +11,8 @@
         of data curated at
         ${h.external_link('https://github.com/pofatu/pofatu-data', label='pofatu/pofatu-data')}.
         All released versions are accessible via <br/>
-        <a href="https://doi.org/10.5281/zenodo.3608861"><img
-                src="https://zenodo.org/badge/DOI/10.5281/zenodo.3608861.svg" alt="DOI"></a>
+        <a href="https://doi.org/10.5281/zenodo.3634435"><img
+                src="https://zenodo.org/badge/DOI/10.5281/zenodo.3634435.svg" alt="DOI"></a>
         <br/>
         on ZENODO as well.
     </p>

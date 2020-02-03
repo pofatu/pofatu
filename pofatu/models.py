@@ -134,6 +134,15 @@ class Analysis(Base, IdNameDescriptionMixin):
     laboratory = Column(Unicode)
     analyst = Column(Unicode)
 
+    @property
+    def title(self):
+        res = 'Analysis'
+        if self.analyst:
+            res += ' by {0}'.format(self.analyst)
+        if self.laboratory:
+            res += ' at {0}'.format(self.laboratory)
+        return res
+
 
 @implementer(IMeasurement)
 class Measurement(Base, IdNameDescriptionMixin):

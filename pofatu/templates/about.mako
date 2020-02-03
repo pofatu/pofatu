@@ -6,7 +6,11 @@
     To cite the database, please cite
 </p>
 
-## FIXME: include Zenodo DOI badge
+<p>
+    <a href="https://doi.org/10.5281/zenodo.3634435">
+        <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3634435.svg" alt="DOI">
+    </a>
+</p>
 
 <p>
     Please also acknowledge the original scientists who contributed to the downloaded dataset by appropriately crediting the original data sources. We strongly encourage the publication of a secondary bibliography, which can be submitted as a supplementary material file.
@@ -15,7 +19,10 @@
 <h3>How to contribute</h3>
 <p>
     We welcome all contributions of geochemical data on archaeological material, regardless of geographical or chrono-cultural boundaries.
-    In order to contribute data, please download and use our Data Submission Template [hyperlink] and Guidelines [hyperlink]
+    In order to contribute data, please download and use our
+    ${h.external_link('https://github.com/pofatu/pofatu-data/blob/master/doc/Pofatu%20Data%20Submission%20Template.xlsx?raw=true', label='Data Submission Template')}
+    and
+    ${h.external_link('https://github.com/pofatu/pofatu-data/blob/master/doc/Pofatu%20Data%20Submission%20Guidelines.pdf?raw=true', label='Guidelines')}.
 </p>
 
 

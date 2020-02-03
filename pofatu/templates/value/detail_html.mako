@@ -76,7 +76,10 @@
     contribution ${h.link(req, ctx.valueset.contribution)}.
 
 % if len(ctx.analyses) > 1:
-    <h3>Analyses</h3>
+    <p>
+        ${len(ctx.analyses)} analyses of this sample are recorded. Follow the links below
+        for details.
+    </p>
     <ul>
         % for a in ctx.analyses:
             <li>
@@ -87,14 +90,10 @@
             </li>
         % endfor
     </ul>
+    <h3>Analyses</h3>
 % endif
 % for i, a in enumerate(ctx.analyses, start=1):
-    <h4 id="${a.id }">
-        Analysis
-        % if a.analyst:
-            by ${a.analyst} at ${a.laboratory}
-        % endif
-    </h4>
+    <%util:section title="${a.title}" level="4" id="${a.id}">
         <dl>
             <dt>analyzed material</dt>
             <dd>${a.analyzed_material_1}; ${a.analyzed_material_2}</dd>
@@ -105,8 +104,9 @@
                 % endif
             % endfor
         </dl>
-    <div>
-        <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, eid='dt-{0}'.format(i), analysis=a) %>
+        <div>
+            <% dt = request.registry.getUtility(h.interfaces.IDataTable, 'measurements'); dt = dt(request, u.Measurement, eid='dt-{0}'.format(i), analysis=a) %>
         ${dt.render()}
-    </div>
+        </div>
+    </%util:section>
 % endfor
