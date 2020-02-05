@@ -14,8 +14,8 @@
     An open-access database for geochemical sourcing of archaeological materials.
 </p>
 <p>
-    Geochemical fingerprinting artefacts and sources has proven to be the most effective way to use material evidence in
-    order to reconstruct raw material procurement practices, intra- and inter-community interactions, and mobility
+    Geochemical fingerprinting of artefacts and sources has proven to be the most effective way to use material evidence in
+    order to reconstruct strategies of raw material procurement, exchange systems, and mobility
     patterns among past societies. In order to facilitate access to this growing body of data and to promote
     comparability and reproducibility in provenance studies, we designed Pofatu, the first online and open-access
     database presenting geochemical compositions and contextual information for archaeological sources and artefacts.
@@ -28,7 +28,7 @@
 </p>
 <p>
     While most prehistoric quarries and surface procurement sources used in the past have yet to be identified,
-    provenance studies must also rely on wide and reliable geological data. For this reason, we advise Pofatu users to
+    provenance studies must also integrate wide and reliable geological data. For this reason, we advise Pofatu users to
     also consult other open-access repositories focusing specifically on geological samples, such as
     ${h.external_link('http://georoc.mpch-mainz.gwdg.de/georoc/', label='GeoRoc')} and
     ${h.external_link('http://www.earthchem.org', label='EarthChem')}.

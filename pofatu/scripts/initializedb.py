@@ -26,6 +26,10 @@ ENTRY_TYPES = {
 }
 
 
+def valid_id(s):
+    return s.replace('.', '_').replace('/', '__')
+
+
 def main(args):
     data = Data()
     ds = Pofatu(pathlib.Path(pofatu.__file__).parent.parent.parent / 'pofatu-data')
@@ -38,6 +42,7 @@ def main(args):
         publisher_url="https://www.shh.mpg.de",
         license="https://creativecommons.org/licenses/by/4.0/",
         domain='pofatu.clld.org',
+        contact='pofatu@shh.mpg.de',
         jsondata={
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'})
@@ -89,20 +94,20 @@ def main(args):
             data.add(
                 models.Location,
                 loc.id,
-                id=loc.id,
+                id=valid_id(loc.id),
                 name=loc.label,
                 latitude=midpoints[loc.id][0],
                 longitude=midpoints[loc.id][1],
-                region=loc.loc1.replace('_', ' '),
-                subregion=loc.loc2,
-                location=loc.loc3,
+                region=loc.region.replace('_', ' '),
+                subregion=loc.subregion,
+                location=loc.locality,
             )
 
     # Add contributions
     for contrib in ds.itercontributions():
         contribution = data.add(
             common.Contribution, contrib.id,
-            id=contrib.id,
+            id=valid_id(contrib.id),
             name=contrib.label,
             description=contrib.description,
         )
@@ -126,7 +131,7 @@ def main(args):
         m = data.add(
             models.Method,
             method.id,
-            id=method.id,
+            id=valid_id(method.id),
             name=method.label,
             code=method.code,
             parameter=method.parameter.strip(),
@@ -149,9 +154,16 @@ def main(args):
                 uncertainty_unit=ref.uncertainty_unit,
                 number_of_measurements=ref.number_of_measurements,
             ))
+        for ref in method.normalizations:
+            DBSession.add(models.Normalization(
+                method=m,
+                reference_sample_name=ref.reference_sample_name,
+                reference_sample_accepted_value=ref.reference_sample_accepted_value,
+                citation=ref.citation,
+            ))
 
     parameter = data.add(common.Parameter, 'c', id='category', name='Sample category')
-    for i, opt in enumerate(attr.fields_dict(pypofatu.models.Sample)['category'].validator.options, start=1):
+    for i, opt in enumerate(attr.fields_dict(pypofatu.models.Sample)['sample_category'].validator.options, start=1):
         data.add(common.DomainElement, opt, parameter=parameter, id=str(i), name=opt)
 
     DBSession.flush()
@@ -166,7 +178,7 @@ def main(args):
             vs = data.add(
                 common.ValueSet,
                 vsid,
-                id=vsid,
+                id=valid_id(vsid),
                 language_pk=data['Location'][sample.location.id].pk,
                 parameter_pk=parameter.pk,
                 contribution_pk=data['Contribution'][sample.source_id].pk,
@@ -176,8 +188,10 @@ def main(args):
             v = data.add(
                 models.Sample,
                 sample.id,
-                id=sample.id.replace('.', '_'),
+                id=valid_id(sample.id),
                 name=sample.id,
+                sample_name=sample.sample_name,
+                sample_comment=sample.sample_comment,
                 petrography=sample.petrography,
                 latitude=sample.location.latitude,
                 longitude=sample.location.longitude,
@@ -190,7 +204,7 @@ def main(args):
                 site_comment=sample.site.comment,
                 site_stratigraphic_position=sample.site.stratigraphic_position,
                 site_stratigraphy_comment=sample.site.stratigraphy_comment,
-                domainelement=data['DomainElement'][sample.category],
+                domainelement=data['DomainElement'][sample.sample_category],
                 valueset=vs,
 
                 artefact_id=sample.artefact.id,
@@ -244,7 +258,8 @@ def main(args):
                 method=data['Method'].get(measurement.method.id) if measurement.method else None,
                 value=measurement.value,
                 less=measurement.less,
-                precision=measurement.precision,
+                precision=measurement.value_sd,
+                sigma=measurement.sd_sigma,
                 unitparameter=p,
             )
 

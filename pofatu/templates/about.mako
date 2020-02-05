@@ -18,7 +18,7 @@
 
 <h3>How to contribute</h3>
 <p>
-    We welcome all contributions of geochemical data on archaeological material, regardless of geographical or chrono-cultural boundaries.
+    We welcome all contributions of geochemical data on archaeological material, regardless of geographic or chrono-cultural boundaries.
     In order to contribute data, please download and use our
     ${h.external_link('https://github.com/pofatu/pofatu-data/blob/master/doc/Pofatu%20Data%20Submission%20Template.xlsx?raw=true', label='Data Submission Template')}
     and

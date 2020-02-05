@@ -6,5 +6,17 @@
                 <dd>${getattr(ctx.method, attr)}</dd>
             % endif
         % endfor
+        % if ctx.method.references:
+            <dt>reference samples</dt>
+            <dd>
+                <ul class="unstyled">
+                    % for ref in ctx.method.references:
+                        <li>
+                            ${ref.as_string()}
+                        </li>
+                    % endfor
+                </ul>
+            </dd>
+        % endif
     </dl>
 </div>

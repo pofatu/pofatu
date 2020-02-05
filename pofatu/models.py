@@ -40,6 +40,8 @@ class Sample(CustomModelMixin, Value):
     - multiple Analyses
     """
     pk = Column(Integer, ForeignKey('value.pk'), primary_key=True)
+    sample_name = Column(Unicode)
+    sample_comment = Column(Unicode)
     latitude = Column(
         Float(),
         CheckConstraint('-90 <= latitude and latitude <= 90'),
@@ -120,6 +122,31 @@ class MethodReference(Base):
     method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
     method = relationship(Method, innerjoin=True, backref="references")
 
+    def as_string(self):
+        res = self.sample_name
+        if self.sample_measured_value:
+            if res:
+                res += ': '
+            res += str(self.sample_measured_value)
+        if self.uncertainty:
+            res += ' ±'
+            res += self.uncertainty
+        if self.uncertainty_unit:
+            res += ' '
+            res += self.uncertainty_unit
+        if self.number_of_measurements:
+            res += ' (N={0})'.format(self.number_of_measurements)
+        return res
+
+
+
+class Normalization(Base):
+    reference_sample_name = Column(Unicode)
+    reference_sample_accepted_value = Column(Unicode)
+    citation = Column(Unicode)
+    method_pk = Column(Integer, ForeignKey('method.pk'), nullable=False)
+    method = relationship(Method, innerjoin=True, backref="normalizations")
+
 
 @implementer(IAnalysis)
 class Analysis(Base, IdNameDescriptionMixin):
@@ -161,7 +188,6 @@ class Measurement(Base, IdNameDescriptionMixin):
 
     unitparameter_pk = Column(Integer, ForeignKey('unitparameter.pk'), nullable=False)
     unitparameter = relationship(UnitParameter, innerjoin=True, backref="values")
-
 
     def as_string(self):
         res = '{0}{1}'.format('\u2264' if self.less else '', self.value)

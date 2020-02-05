@@ -19,11 +19,6 @@ class Refs(Sources):
         return res
 
 
-class ValueCol(Col):
-    def format(self, item):
-        return item.as_string()
-
-
 class StatsCol(Col):
     __kw__ = {'bSortable': False, 'bSearchable': False, 'sTitle': 'Summary for the measured parameter'}
 
@@ -34,6 +29,21 @@ class StatsCol(Col):
             HTML.li('Mean: {0.mean:.2f}'.format(item.unitparameter)),
             HTML.li('Median: {0.median:.2f}'.format(item.unitparameter)),
         ], **{'class': 'inline'})
+
+
+class ValueCol(Col):
+    def format(self, item):
+        return '{0}{1}'.format('\u2264' if item.less else '', item.value)
+
+
+class PrecisionCol(Col):
+    def format(self, item):
+        return '±{0}'.format(item.precision) if item.precision else ''
+
+
+class SigmaCol(Col):
+    def format(self, item):
+        return '{0}σ'.format(item.sigma) if item.sigma else ''
 
 
 class Measurements(DataTable):
@@ -62,6 +72,8 @@ class Measurements(DataTable):
         else:
             res = []
         res.append(ValueCol(self, 'value'))
+        res.append(PrecisionCol(self, 'precision', sTitle='Value SD'))
+        res.append(SigmaCol(self, 'sigma', sTitle='SD Sigma'))
         #if self.analysis:
         #    res.append(StatsCol(self, 'stats'))
         res.append(DetailsRowLinkCol(self, 'method', button_text='method'))
