@@ -139,7 +139,6 @@ class MethodReference(Base):
         return res
 
 
-
 class Normalization(Base):
     reference_sample_name = Column(Unicode)
     reference_sample_accepted_value = Column(Unicode)

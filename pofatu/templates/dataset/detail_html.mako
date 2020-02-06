@@ -8,7 +8,7 @@
 
 
 <h2>Welcome to Pofatu*</h2>
-<small>*Proto-Polynesian for “stone”</small>
+<small>*Proto Eastern Polynesian for “stone”</small>
 
 <p class="lead">
     An open-access database for geochemical sourcing of archaeological materials.
