@@ -41,6 +41,11 @@ class SamplesMap(Map):
             'Locations',
             self.req.route_url('languages_alt', **route_params))
 
+    def get_default_options(self):
+        return {
+            'base_layer': "Esri.WorldImagery",
+            'max_zoom': 25,
+        }
 
 
 def includeme(config):
