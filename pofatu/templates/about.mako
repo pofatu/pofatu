@@ -6,11 +6,19 @@
     To cite the database, please cite
 </p>
 
-<p>
-    <a href="https://doi.org/10.5281/zenodo.3634435">
-        <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3634435.svg" alt="DOI">
+<blockquote>
+    Aymeric Hermann & Robert Forkel. (2020). pofatu/pofatu-data: Pofatu, a curated and open-access database for geochemical sourcing of archaeological materials (Version v1.0.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.3670127
+    <br/>
+    <a href="https://doi.org/10.5281/zenodo.3670127">
+        <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3670127.svg" alt="DOI">
     </a>
+</blockquote>
+<p>
+    as well as our paper introducing the database
 </p>
+<blockquote>
+    Hermann, A., Forkel, R., McAlister, A. et al. Pofatu, a curated and open-access database for geochemical sourcing of archaeological materials. Sci Data 7, 141 (2020). <a href="https://doi.org/10.1038/s41597-020-0485-8">DOI: 10.1038/s41597-020-0485-8</a>
+</blockquote>
 
 <p>
     Please also acknowledge the original scientists who contributed to the downloaded dataset by appropriately crediting the original data sources. We strongly encourage the publication of a secondary bibliography, which can be submitted as a supplementary material file.
