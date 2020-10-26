@@ -7,11 +7,9 @@
 </p>
 
 <blockquote>
-    Aymeric Hermann & Robert Forkel. (2020). pofatu/pofatu-data: Pofatu, a curated and open-access database for geochemical sourcing of archaeological materials (Version v1.0.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.3670127
+    Aymeric Hermann & Robert Forkel. (2020). pofatu/pofatu-data: Pofatu, a curated and open-access database for geochemical sourcing of archaeological materials (Version v1.1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.4133959
     <br/>
-    <a href="https://doi.org/10.5281/zenodo.3670127">
-        <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3670127.svg" alt="DOI">
-    </a>
+    <a href="https://doi.org/10.5281/zenodo.4133959"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4133959.svg" alt="DOI"></a>
 </blockquote>
 <p>
     as well as our paper introducing the database
