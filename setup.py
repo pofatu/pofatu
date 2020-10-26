@@ -23,6 +23,7 @@ setup(
         'sqlalchemy',
         'waitress',
         'xlrd',
+        'shapely',
     ],
     extras_require={
         'dev': [

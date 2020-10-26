@@ -139,6 +139,10 @@ class Samples(Values):
             res.extend([
                 RegionCol(self, 'region', choices=get_distinct_values(models.Location.region)),
                 SubRegionCol(self, 'subregion'),
+                Col(self,
+                    'site',
+                    model_col=models.Sample.site_name,
+                    choices=get_distinct_values(models.Sample.site_name)),
             ])
         return res
 

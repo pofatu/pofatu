@@ -5,7 +5,7 @@ import collections
 
 import attr
 from sqlalchemy.orm import joinedload
-from clld.scripts.util import initializedb, Data, bibtex2source
+from clld.cliutil import Data, bibtex2source
 from clld.lib import bibtex
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -28,6 +28,10 @@ ENTRY_TYPES = {
 
 def valid_id(s):
     return s.replace('.', '_').replace('/', '__')
+
+
+def better_slug(s):
+    return '_'.join([slug(ss, lowercase=False) for ss in s.replace('-', '_').replace('.', '_').replace("'", '_').replace('/', '_').replace(' ', '_').split('_')])
 
 
 def main(args):
@@ -230,7 +234,7 @@ def main(args):
         a = data.add(
             models.Analysis,
             analysis.id,
-            id=slug(analysis.id, lowercase=False),
+            id=better_slug(analysis.id),
             name=analysis.id,
             sample=v,
         )
@@ -277,7 +281,3 @@ def prime_cache(args):
         p.median = statistics.median(vals)
         p.count_values = len(vals)
 
-
-if __name__ == '__main__':  # pragma: no cover
-    initializedb(create=main, prime_cache=prime_cache)
-    sys.exit(0)
