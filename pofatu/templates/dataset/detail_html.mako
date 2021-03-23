@@ -4,6 +4,8 @@
     <div class="well">
         <img src="${req.static_url('pofatu:static/logo.png')}">
     </div>
+<a class="twitter-timeline" href="https://twitter.com/pofatu?ref_src=twsrc%5Etfw">Tweets by pofatu</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 </%def>
 
 
