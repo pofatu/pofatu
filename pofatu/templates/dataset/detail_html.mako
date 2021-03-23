@@ -1,16 +1,17 @@
 <%inherit file="../pofatu.mako"/>
+<%! multirow = True %>
 
-<%def name="sidebar()">
-    <div class="well">
+<div class="row-fluid">
+
+<div class="span3">
+    <div class="well" style="margin-top: 1em;">
         <img src="${req.static_url('pofatu:static/logo.png')}">
     </div>
-<a class="twitter-timeline" href="https://twitter.com/pofatu?ref_src=twsrc%5Etfw">Tweets by pofatu</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
 
-</%def>
-
-
-<h2>Welcome to Pofatu*</h2>
-<small>*Proto Eastern Polynesian for “stone”</small>
+<div class="span6">
+  <h2>Welcome to Pofatu*</h2>
+  <small>*Proto Eastern Polynesian for “stone”</small>
 
 <p class="lead">
     An open-access database for geochemical sourcing of archaeological materials.
@@ -35,3 +36,11 @@
     ${h.external_link('http://georoc.mpch-mainz.gwdg.de/georoc/', label='GeoRoc')} and
     ${h.external_link('http://www.earthchem.org', label='EarthChem')}.
 </p>
+</div>
+<div class="span3">
+    <div class="well well-small" style="margin-top: 1em;">
+<a class="twitter-timeline" data-height="400" href="https://twitter.com/pofatu?ref_src=twsrc%5Etfw">Tweets by pofatu</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</div>
+
+
