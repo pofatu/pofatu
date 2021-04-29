@@ -41,12 +41,12 @@ def main(args):
     dataset = common.Dataset(
         id=pofatu.__name__,
         name="POFATU",
-        publisher_name="Max Planck Institute for the Science of Human History",
-        publisher_place="Jena",
-        publisher_url="https://www.shh.mpg.de",
+        publisher_name="Max Planck Institute for Evolutionary Anthropology",
+        publisher_place="Leipzig",
+        publisher_url="https://www.eva.mpg.de",
         license="https://creativecommons.org/licenses/by/4.0/",
         domain='pofatu.clld.org',
-        contact='pofatu@shh.mpg.de',
+        contact='pofatu@eva.mpg.de',
         jsondata={
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'})
