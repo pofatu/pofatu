@@ -18,8 +18,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'clldmpg>=4.1',
-        'clld>=7',
+        'clldmpg>=4.2',
+        'clld>=8',
         'sqlalchemy',
         'waitress',
         'xlrd',
