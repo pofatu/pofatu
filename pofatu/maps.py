@@ -21,7 +21,6 @@ class SampleMap(Map):
 
     def get_default_options(self):
         return {
-            'base_layer': "Esri.WorldImagery",
             'center': list(reversed(get_lonlat(self.ctx) or [0, 0])),
             'max_zoom': 25,
             'no_popup': True,
@@ -43,7 +42,6 @@ class SamplesMap(Map):
 
     def get_default_options(self):
         return {
-            'base_layer': "Esri.WorldImagery",
             'max_zoom': 25,
         }
 
