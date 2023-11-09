@@ -102,7 +102,7 @@ def main(args):
                 name=loc.label,
                 latitude=midpoints[loc.id][0],
                 longitude=midpoints[loc.id][1],
-                region=loc.region.replace('_', ' '),
+                region=(loc.region or '').replace('_', ' '),
                 subregion=loc.subregion,
                 location=loc.locality,
             )

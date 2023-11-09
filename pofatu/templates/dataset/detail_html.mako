@@ -1,14 +1,5 @@
 <%inherit file="../home_comp.mako"/>
 
-<%def name="sidebar()">
-    <div class="well well-small" style="margin-top: 1em;">
-        <a class="twitter-timeline" data-height="800" href="https://twitter.com/pofatu?ref_src=twsrc%5Etfw">Tweets by
-            pofatu</a>
-        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</%def>
-
-
 <div style="float: left; width: 20%; margin-right: 20px; margin-top: 1em;">
     <img src="${req.static_url('pofatu:static/logo.png')}">
 </div>
