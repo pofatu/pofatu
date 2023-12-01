@@ -36,7 +36,6 @@
     </figure>
 </div>
 
-
 <p class="lead">
     Geochemical sourcing and long-distance voyaging among Pacific Island societies.
 </p>
@@ -98,6 +97,11 @@
     process that includes qualitative and
     quantitative data review and users feedback.
 </p>
+<p>
+    Pofatu won the
+    <a href="https://www.enseignementsup-recherche.gouv.fr/fr/remise-des-prix-science-ouverte-des-donnees-de-la-recherche-93729">Open Science Award for Research Data</a> of the French
+    Ministry of Higher Education and Research 2023</a>.
+</p>
 
 
 <div style="float: right; width: 40%;">
@@ -125,24 +129,28 @@
     prehistoric quarries from some of the most remote and isolated places on the planet. In that sense, Pofatu is a tool
     that will also facilitate interdisciplinary research as part of a growing geoinformatics network.
 </p>
-
-<table>
-    <tr>
-        <td>
-            <img width="100" src="${req.static_url('pofatu:static/cnrs_logo.png')}" style="margin-right: 30px;">
-        </td>
-        <td>
-            <p class="lead">
-                Acknowledgements
-            </p>
-            <p>
+            
+<p class="lead">Acknowledgements</p>
+<p>
                 Work on Pofatu is supported by
                 ${h.external_link('http://www.cnrs.fr/', label="CNRS")} and
                 ${h.external_link('https://www.mpg.de/de', label="Max-Planck-Gesellschaft")}.
-            </p>
+</p>
+
+<table width="100%">
+    <tr>
+        <td style="width: 33%; text-align: left;">
+            <img width="100" src="${req.static_url('pofatu:static/cnrs_logo.png')}">
         </td>
         <td>
-            <img width="100" src="${req.static_url('clldmpg:static/minerva.png')}" style="margin-left: 30px;">
         </td>
+        <td style="width: 33%; text-align: center;">
+    <a href="https://www.enseignementsup-recherche.gouv.fr/fr/remise-des-prix-science-ouverte-des-donnees-de-la-recherche-93729">
+        <img width="100" src="${req.static_url('pofatu:static/os_small.png')}">
+    </a>
+        </td>
+<td style="width: 33%; text-align: right;">
+            <img width="100" src="${req.static_url('clldmpg:static/minerva.png')}">
+</td>
     </tr>
 </table>
