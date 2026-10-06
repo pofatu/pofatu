@@ -23,6 +23,8 @@ setup(
         'sqlalchemy',
         'waitress',
         'shapely',
+        'pypofatu',
+        'psycopg2',
     ],
     extras_require={
         'dev': [
@@ -30,7 +32,6 @@ setup(
             'tox',
         ],
         'test': [
-            'psycopg2',
             'mock',
             'pytest>=3.1',
             'pytest-clld>=0.4',
