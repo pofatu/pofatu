@@ -26,7 +26,7 @@ dill==0.4.1
 distlib==0.4.3
 docutils==0.23
 et_xmlfile==2.0.0
-filelock==3.29.5
+filelock==4.2.1
 flake8==7.3.0
 greenlet==3.5.3
 h11==0.16.0
