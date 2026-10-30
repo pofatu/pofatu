@@ -77,7 +77,7 @@ pyflakes==3.4.0
 -e git+https://github.com/pofatu/pygeoroc@bba10df454874053c75ec1a2c4a00cd5b6487efa#egg=pygeoroc
 Pygments==2.20.0
 pylatexenc==2.10
-pylint==4.0.6
+pylint==4.0.9
 pyparsing==3.3.2
 -e git+https://github.com/pofatu/pypofatu@ac68a6ed9597917b67cc471aa316f757d8c960fe#egg=pypofatu
 pyproject-api==1.10.1
