@@ -36,7 +36,11 @@ def better_slug(s):
 
 def main(args):
     data = Data()
-    ds = Pofatu(pathlib.Path(pofatu.__file__).parent.parent.parent / 'pofatu-data')
+
+    if args.assume_yes:
+        ds = Pofatu(pathlib.Path('dataset'))
+    else:
+        ds = Pofatu(pathlib.Path(pofatu.__file__).parent.parent.parent / 'pofatu-data')
 
     dataset = common.Dataset(
         id=pofatu.__name__,
@@ -56,7 +60,7 @@ def main(args):
         ('forkelrobert', 'Robert Forkel'),
     ]):
         ed = data.add(common.Contributor, id_, id=id_, name=name)
-        common.Editor(dataset=dataset, contributor=ed, ord=i + 1)
+        DBSession.add(common.Editor(dataset=dataset, contributor=ed, ord=i + 1))
     DBSession.add(dataset)
 
     for rec in ds.iterbib():
@@ -121,7 +125,7 @@ def main(args):
             co = data['Contributor'].get(cid)
             if not co:
                 co = data.add(common.Contributor, cid, id=cid, name=name)
-            common.ContributionContributor(ord=i, contribution=contribution, contributor=co)
+            DBSession.add(common.ContributionContributor(ord=i, contribution=contribution, contributor=co))
 
         for ref in contrib.source_ids:
             DBSession.add(common.ContributionReference(
@@ -280,4 +284,3 @@ def prime_cache(args):
         p.mean = statistics.mean(vals)
         p.median = statistics.median(vals)
         p.count_values = len(vals)
-
